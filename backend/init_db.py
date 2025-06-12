@@ -39,84 +39,106 @@ def populate_initial_data(conn):
         print("Default admin user already exists.")
 
     try:
-        print("Fetching schedule data...")
-        url = "https://orar.usv.ro/orar/vizualizare/data/orarSPG.php?ID=1028&mod=grupa&json"
-        response = requests.get(url, timeout=30)
+        # Part 1: Populate Teachers from FIESC
+        print("Fetching teacher data...")
+        teachers_url = "https://orar.usv.ro/orar/vizualizare/data/cadre.php?json"
+        target_faculty = "Facultatea de Inginerie Electrică şi Ştiinţa Calculatoarelor"
+        
+        response = requests.get(teachers_url, timeout=30)
+        response.raise_for_status()
+        teachers_data = response.json()
+        
+        fiesc_teachers = [t for t in teachers_data if t.get('facultyName') == target_faculty and t.get('emailAddress')]
+        print(f"Found {len(fiesc_teachers)} teachers from {target_faculty}.")
+
+        for teacher in fiesc_teachers:
+            email = teacher['emailAddress'].strip()
+            full_name = f"{teacher['lastName']} {teacher['firstName']}".strip()
+
+            cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
+            if cursor.fetchone():
+                print(f"User with email {email} already exists. Skipping.")
+                continue
+
+            teacher_id = str(uuid.uuid4())
+            cursor.execute(
+                "INSERT INTO users (id, full_name, email, role) VALUES (%s, %s, %s, %s)",
+                (teacher_id, full_name, email, 'CADRU_DIDACTIC')
+            )
+            print(f"Added teacher: {full_name} ({email})")
+
+    except (requests.exceptions.RequestException, ValueError) as e:
+        print(f"Could not fetch or parse teacher data: {e}.")
+        return # Stop if we can't get teachers
+
+    # Part 2: Populate Disciplines and link to Teachers
+    try:
+        print("Fetching schedule data for disciplines...")
+        schedule_url = "https://orar.usv.ro/orar/vizualizare/data/orarSPG.php?ID=1028&mod=grupa&json"
+        response = requests.get(schedule_url, timeout=30)
         response.raise_for_status()
         api_response = response.json()
+
         if not (isinstance(api_response, list) and len(api_response) > 0 and isinstance(api_response[0], list)):
-            print("API response is not in the expected format.")
-            return
-        schedule_entries = api_response[0]
-        print(f"Found {len(schedule_entries)} schedule entries.")
+            print("Schedule API response is not in the expected format.")
+        else:
+            schedule_entries = api_response[0]
+            print(f"Found {len(schedule_entries)} schedule entries.")
 
-        print("Populating teachers...")
-        teachers_to_add = {f"{entry.get('teacherLastName', '').strip()} {entry.get('teacherFirstName', '').strip()}" for entry in schedule_entries if isinstance(entry, dict) and entry.get('teacherLastName') and entry.get('teacherFirstName')}
-        teacher_name_to_id_map = {}
-        for name in teachers_to_add:
-            cursor.execute("SELECT id FROM users WHERE full_name = %s", (name,))
-            existing_teacher = cursor.fetchone()
-            if existing_teacher is None:
-                email = f"{name.replace(' ', '.').lower().replace('-', '')}@usv.ro"
-                teacher_id = str(uuid.uuid4())
-                cursor.execute(
-                    "INSERT INTO users (id, full_name, email, role) VALUES (%s, %s, %s, %s)",
-                    (teacher_id, name, email, 'CADRU_DIDACTIC')
-                )
-                teacher_name_to_id_map[name] = teacher_id
-            else:
-                teacher_name_to_id_map[name] = existing_teacher[0]
-        print(f"Processed {len(teachers_to_add)} unique teachers.")
+            discipline_teacher_map = {}
+            for entry in schedule_entries:
+                if isinstance(entry, dict):
+                    discipline_name = entry.get('topicLongName', '').strip()
+                    teacher_name = f"{entry.get('teacherLastName', '').strip()} {entry.get('teacherFirstName', '').strip()}"
+                    if discipline_name and teacher_name:
+                        if discipline_name not in discipline_teacher_map:
+                            discipline_teacher_map[discipline_name] = set()
+                        discipline_teacher_map[discipline_name].add(teacher_name)
+            
+            cursor.execute("SELECT id, full_name FROM users WHERE role = 'CADRU_DIDACTIC'")
+            db_teachers = cursor.fetchall()
+            teacher_name_to_id_map = {name: str(uid) for uid, name in db_teachers}
 
-        print("Populating disciplines and linking teachers...")
-        discipline_teacher_map = {}
-        for entry in schedule_entries:
-            if isinstance(entry, dict):
-                discipline_name = entry.get('topicLongName', '').strip()
-                teacher_name = f"{entry.get('teacherLastName', '').strip()} {entry.get('teacherFirstName', '').strip()}"
-                if discipline_name and teacher_name:
-                    if discipline_name not in discipline_teacher_map:
-                        discipline_teacher_map[discipline_name] = set()
-                    discipline_teacher_map[discipline_name].add(teacher_name)
-        
-        disciplines_added_count = 0
-        for discipline_name, teacher_names in discipline_teacher_map.items():
-            cursor.execute("SELECT id FROM disciplines WHERE name = %s", (discipline_name,))
-            discipline_row = cursor.fetchone()
-            if not discipline_row:
-                cursor.execute("INSERT INTO disciplines (name) VALUES (%s) RETURNING id", (discipline_name,))
-                discipline_id = cursor.fetchone()[0]
-                disciplines_added_count += 1
-            else:
-                discipline_id = discipline_row[0]
-            for teacher_name in teacher_names:
-                teacher_id = teacher_name_to_id_map.get(teacher_name)
-                if teacher_id:
-                    cursor.execute("SELECT 1 FROM discipline_teachers WHERE discipline_id = %s AND teacher_id = %s", (discipline_id, teacher_id))
-                    if cursor.fetchone() is None:
-                        cursor.execute("INSERT INTO discipline_teachers (discipline_id, teacher_id) VALUES (%s, %s)", (discipline_id, teacher_id))
-        print(f"Added {disciplines_added_count} new disciplines.")
-
-        print("Populating rooms...")
-        try:
-            rooms_url = "https://orar.usv.ro/orar/vizualizare/data/sali.php?json"
-            rooms_response = requests.get(rooms_url, timeout=30)
-            rooms_response.raise_for_status()
-            rooms_data = rooms_response.json()
-            rooms_added = 0
-            for room in rooms_data:
-                if not room.get('name') or not room.get('capacitate') or int(room['capacitate']) == 0:
-                    continue
-                cursor.execute("SELECT id FROM rooms WHERE name = %s", (room.get('name'),))
-                if cursor.fetchone() is None:
-                    cursor.execute("INSERT INTO rooms (name, short_name, building_name, capacity) VALUES (%s, %s, %s, %s)", (room.get('name'), room.get('shortName'), room.get('buildingName'), int(room.get('capacitate', 0))))
-                    rooms_added += 1
-            print(f"Added {rooms_added} new rooms.")
-        except (requests.exceptions.RequestException, ValueError, KeyError) as e:
-            print(f"Could not fetch or parse rooms data: {e}.")
+            disciplines_added_count = 0
+            for discipline_name, teacher_names in discipline_teacher_map.items():
+                cursor.execute("SELECT id FROM disciplines WHERE name = %s", (discipline_name,))
+                discipline_row = cursor.fetchone()
+                if not discipline_row:
+                    cursor.execute("INSERT INTO disciplines (name) VALUES (%s) RETURNING id", (discipline_name,))
+                    discipline_id = cursor.fetchone()[0]
+                    disciplines_added_count += 1
+                else:
+                    discipline_id = discipline_row[0]
+                
+                for teacher_name in teacher_names:
+                    teacher_id = teacher_name_to_id_map.get(teacher_name)
+                    if teacher_id:
+                        cursor.execute("SELECT 1 FROM discipline_teachers WHERE discipline_id = %s AND teacher_id = %s", (discipline_id, teacher_id))
+                        if cursor.fetchone() is None:
+                            cursor.execute("INSERT INTO discipline_teachers (discipline_id, teacher_id) VALUES (%s, %s)", (discipline_id, teacher_id))
+            print(f"Added {disciplines_added_count} new disciplines and linked teachers.")
 
     except (requests.exceptions.RequestException, ValueError) as e:
         print(f"Could not fetch or parse schedule data: {e}.")
+
+    # Part 3: Populate Rooms
+    print("Populating rooms...")
+    try:
+        rooms_url = "https://orar.usv.ro/orar/vizualizare/data/sali.php?json"
+        rooms_response = requests.get(rooms_url, timeout=30)
+        rooms_response.raise_for_status()
+        rooms_data = rooms_response.json()
+        rooms_added = 0
+        for room in rooms_data:
+            if not room.get('name') or not room.get('capacitate') or int(room.get('capacitate', 0)) == 0:
+                continue
+            cursor.execute("SELECT id FROM rooms WHERE name = %s", (room.get('name'),))
+            if cursor.fetchone() is None:
+                cursor.execute("INSERT INTO rooms (name, short_name, building_name, capacity) VALUES (%s, %s, %s, %s)", (room.get('name'), room.get('shortName'), room.get('buildingName'), int(room.get('capacitate', 0))))
+                rooms_added += 1
+        print(f"Added {rooms_added} new rooms.")
+    except (requests.exceptions.RequestException, ValueError, KeyError) as e:
+        print(f"Could not fetch or parse rooms data: {e}.")
 
 def main():
     conn = None
@@ -130,7 +152,7 @@ def main():
                 full_name VARCHAR(255) NOT NULL,
                 email VARCHAR(255) UNIQUE NOT NULL,
                 password_hash VARCHAR(255),
-                role VARCHAR(50) NOT NULL DEFAULT 'STUDENT' CHECK (role IN ('STUDENT', 'CADRU_DIDACTIC', 'ADMIN', 'SEF_GRUPA')),
+                role VARCHAR(50) NOT NULL DEFAULT 'STUDENT' CHECK (role IN ('STUDENT', 'CADRU_DIDACTIC', 'ADMIN', 'SEF_GRUPA', 'SEC')),
                 student_group VARCHAR(50),
                 year_of_study INTEGER,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

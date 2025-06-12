@@ -2,8 +2,10 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Button, TextField, Box, Typography, Alert, Dialog, DialogActions,
-    DialogContent, DialogContentText, DialogTitle
+    DialogContent, DialogContentText, DialogTitle, IconButton, Stack
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const RoomManagement = () => {
     const [rooms, setRooms] = useState([]);
@@ -191,8 +193,14 @@ const RoomManagement = () => {
                                         <TableCell>{room.building_name}</TableCell>
                                         <TableCell>{room.capacity}</TableCell>
                                         <TableCell align="right">
-                                            <Button variant="contained" onClick={() => handleEditClick(room)} sx={{ mr: 1 }}>Edit</Button>
-                                            <Button variant="contained" color="error" onClick={() => handleDeleteClick(room.id)}>Delete</Button>
+                                            <Stack direction="row" spacing={1} justifyContent="flex-end">
+                                                <IconButton onClick={() => handleEditClick(room)} color="primary">
+                                                    <EditIcon />
+                                                </IconButton>
+                                                <IconButton onClick={() => handleDeleteClick(room.id)} color="error">
+                                                    <DeleteIcon />
+                                                </IconButton>
+                                            </Stack>
                                         </TableCell>
                                     </>
                                 )}

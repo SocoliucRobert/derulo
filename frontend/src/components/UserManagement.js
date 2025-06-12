@@ -3,8 +3,11 @@ import {
     Stack,
     Container,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-    Button, TextField, Select, MenuItem, FormControl, Box, Typography, Alert
+    Button, TextField, Select, MenuItem, FormControl, Box, Typography, Alert,
+    IconButton
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const UserManagement = ({ session }) => {
     const [users, setUsers] = useState([]);
@@ -27,7 +30,7 @@ const UserManagement = ({ session }) => {
 
     const fetchRoles = () => {
         // Hardcoded for now, but could be fetched from the backend
-        setRoles(['STUDENT', 'SEF_GRUPA', 'CADRU_DIDACTIC', 'ADMIN']);
+        setRoles(['STUDENT', 'CADRU_DIDACTIC', 'ADMIN', 'SEF_GRUPA', 'SEC']);
     };
 
     useEffect(() => {
@@ -86,6 +89,26 @@ const UserManagement = ({ session }) => {
     const handleRoleChange = (e) => {
         setEditedUser(prev => ({ ...prev, role: e.target.value }));
     }
+
+    const handleDeleteClick = (userId) => {
+        if (window.confirm('Are you sure you want to delete this user?')) {
+            fetch(`http://localhost:5000/api/users/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+                }
+            })
+            .then(res => {
+                if (res.ok) {
+                    setSuccess('User deleted successfully!');
+                    fetchUsers(); // Refresh the user list
+                } else {
+                    res.json().then(data => setError(data.message || 'Failed to delete user.'));
+                }
+            })
+            .catch(err => setError(err.message));
+        }
+    };
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -194,10 +217,13 @@ const UserManagement = ({ session }) => {
                                             </>
                                         )}
                                         <TableCell align="right">
-                                            <Stack direction="row" spacing={1}>
-                                                <Button variant="contained" onClick={() => handleEditClick(user)}>
-                                                    Edit
-                                                </Button>
+                                            <Stack direction="row" spacing={1} justifyContent="flex-end">
+                                                <IconButton onClick={() => handleEditClick(user)} color="primary">
+                                                    <EditIcon />
+                                                </IconButton>
+                                                <IconButton onClick={() => handleDeleteClick(user.id)} color="error">
+                                                    <DeleteIcon />
+                                                </IconButton>
                                             </Stack>
                                         </TableCell>
                                     </>

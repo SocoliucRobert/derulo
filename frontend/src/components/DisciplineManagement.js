@@ -44,11 +44,11 @@ const MenuProps = {
 
 const DisciplineManagement = () => {
     const [disciplines, setDisciplines] = useState([]);
-    const [teachers, setTeachers] = useState([]);
+    const [allTeachers, setAllTeachers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-    const [editState, setEditState] = useState({}); // { id: { name: '...', teacher_ids: [...] } }
+    const [editState, setEditState] = useState({});
     const [newDisciplineName, setNewDisciplineName] = useState('');
     const [newDisciplineTeachers, setNewDisciplineTeachers] = useState([]);
     const [deleteConfirm, setDeleteConfirm] = useState({ open: false, id: null });
@@ -75,7 +75,7 @@ const DisciplineManagement = () => {
             });
             if (!response.ok) throw new Error('Failed to fetch teachers');
             const data = await response.json();
-            setTeachers(data);
+            setAllTeachers(data);
         } catch (err) {
             setError(err.message);
         }
@@ -106,7 +106,7 @@ const DisciplineManagement = () => {
             setSuccess('Discipline added successfully!');
             setNewDisciplineName('');
             setNewDisciplineTeachers([]);
-            fetchDisciplines(); // Refresh list
+            fetchDisciplines();
         } catch (err) {
             setError(err.message);
         }
@@ -121,7 +121,7 @@ const DisciplineManagement = () => {
             const data = await response.json();
             if (!response.ok) throw new Error(data.message || 'Failed to delete discipline');
             setSuccess('Discipline deleted successfully!');
-            fetchDisciplines(); // Refresh list
+            fetchDisciplines();
         } catch (err) {
             setError(err.message);
         }
@@ -147,7 +147,7 @@ const DisciplineManagement = () => {
             if (!response.ok) throw new Error(data.message || 'Failed to update discipline');
             setSuccess('Discipline updated successfully!');
             setEditState(prev => { const newState = { ...prev }; delete newState[id]; return newState; });
-            fetchDisciplines(); // Refresh list
+            fetchDisciplines();
         } catch (err) {
             setError(err.message);
         }
@@ -218,13 +218,13 @@ const DisciplineManagement = () => {
                             renderValue={(selected) => (
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                     {selected.map((value) => (
-                                        <Chip key={value} label={teachers.find(t => t.id === value)?.full_name || ''} />
+                                        <Chip key={value} label={allTeachers.find(t => t.id === value)?.full_name || ''} />
                                     ))}
                                 </Box>
                             )}
                             MenuProps={MenuProps}
                         >
-                            {teachers.map(teacher => (
+                            {allTeachers.map(teacher => (
                                 <MenuItem key={teacher.id} value={teacher.id}>
                                     {teacher.full_name}
                                 </MenuItem>
@@ -269,13 +269,13 @@ const DisciplineManagement = () => {
                                                         renderValue={(selected) => (
                                                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                                                 {selected.map((value) => (
-                                                                    <Chip key={value} label={teachers.find(t => t.id === value)?.full_name || ''} />
+                                                                    <Chip key={value} label={allTeachers.find(t => t.id === value)?.full_name || ''} />
                                                                 ))}
                                                             </Box>
                                                         )}
                                                         MenuProps={MenuProps}
                                                     >
-                                                        {teachers.map(teacher => (
+                                                        {allTeachers.map(teacher => (
                                                             <MenuItem key={teacher.id} value={teacher.id}>
                                                                 {teacher.full_name}
                                                             </MenuItem>
@@ -317,7 +317,7 @@ const DisciplineManagement = () => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setDeleteConfirm({ open: false, id: null })}>Cancel</Button>
-                    <Button onClick={() => handleDelete(deleteConfirm.id)} color="error" autoFocus>Delete</Button>
+                    <Button onClick={() => handleDelete(deleteConfirm.id)} color="error">Delete</Button>
                 </DialogActions>
             </Dialog>
         </Box>
