@@ -178,10 +178,18 @@ def main():
             ('exams', """
                 id SERIAL PRIMARY KEY,
                 discipline_id INTEGER REFERENCES disciplines(id),
-                session VARCHAR(50),
-                status VARCHAR(50) DEFAULT 'PROPOSTA' CHECK (status IN ('PROPOSTA', 'APROVADA', 'RESPINSA')),
+                exam_type VARCHAR(50) CHECK (exam_type IN ('EXAM', 'PROJECT')),
+                student_group VARCHAR(50),
+                main_teacher_id VARCHAR(255) REFERENCES users(id),
+                second_teacher_id VARCHAR(255) REFERENCES users(id),
+                status VARCHAR(50) DEFAULT 'DRAFT' CHECK (status IN ('DRAFT', 'PROPOSED', 'ACCEPTED', 'REJECTED', 'CANCELLED', 'RESCHEDULED', 'CONFIRMED')),
                 exam_date TIMESTAMP,
-                room_id INTEGER REFERENCES rooms(id)
+                start_hour INTEGER CHECK (start_hour >= 8 AND start_hour <= 18),
+                duration INTEGER DEFAULT 120,
+                room_id INTEGER REFERENCES rooms(id),
+                created_by VARCHAR(255) REFERENCES users(id),
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             """),
             ('exam_periods', """
                 id SERIAL PRIMARY KEY,

@@ -31,7 +31,7 @@ function App() {
                 });
                 if (!response.ok) throw new Error('Sync failed');
                 const userData = await response.json();
-                setSession({ ...session, user: { ...session.user, role: userData.role_name } });
+                setSession({ ...session, user: { ...session.user, ...userData } });
             } catch (error) {
                 console.error('User sync failed, signing out.', error);
                 await supabase.auth.signOut();
@@ -87,7 +87,11 @@ function App() {
             return <Navigate to="/login" />;
         }
 
-        const userRole = session.user?.role || session.user?.user_metadata?.role;
+        let userRole = session.user?.role || session.user?.user_metadata?.role;
+        // Map SG to SEF_GRUPA for backend consistency
+        if (userRole === 'SG') {
+            userRole = 'SEF_GRUPA';
+        }
 
         switch (userRole) {
             case 'ADM':
@@ -95,12 +99,16 @@ function App() {
             case 'SEC':
                 return <SecDashboard session={session} />;
             case 'CD':
+            case 'CADRU_DIDACTIC':
                 return <CdDashboard session={session} />;
+            
             case 'SG':
+            case 'SEF_GRUPA':
                 return <SgDashboard session={session} />;
             case 'STUDENT':
                 return <StudentDashboard session={session} />;
             default:
+                console.warn(`Unknown role: ${userRole}, defaulting to Dashboard`);
                 return <Dashboard session={session} />;
         }
     };

@@ -122,42 +122,44 @@ const Dashboard = ({ session }) => {
                     />
                 )}
 
-                <Paper elevation={3} sx={{ p: 3 }}>
-                    <Typography variant="h5" component="h2" gutterBottom>
-                        Exam Schedule
-                    </Typography>
-                    {loading ? (
-                        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-                            <CircularProgress />
-                        </Box>
-                    ) : exams.length > 0 ? (
-                        <Grid container spacing={3}>
-                            {exams.map(exam => (
-                                <Grid item xs={12} sm={6} md={4} key={exam.id}>
-                                    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', '&:hover': { boxShadow: 6, transform: 'scale(1.02)' }, transition: 'transform 0.2s, box-shadow 0.2s' }}>
-                                        <CardContent sx={{ flexGrow: 1 }}>
-                                            <Typography variant="h6" component="div" gutterBottom>
-                                                {exam.discipline || exam.name}
-                                            </Typography>
-                                            <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                                                Status: {exam.status}
-                                            </Typography>
-                                            <Typography variant="body2">
-                                                Date: {new Date(exam.date || exam.final_date).toLocaleString()}
-                                                <br />
-                                                Room: {exam.room || 'Not set'}
-                                            </Typography>
-                                        </CardContent>
-                                    </Card>
-                                </Grid>
-                            ))}
-                        </Grid>
-                    ) : (
-                        <Typography sx={{ mt: 2, fontStyle: 'italic', color: 'text.secondary' }}>
-                            No exams scheduled at the moment.
+                {!isAdmin && (
+                    <Paper elevation={3} sx={{ p: 3 }}>
+                        <Typography variant="h5" component="h2" gutterBottom>
+                            Exam Schedule
                         </Typography>
-                    )}
-                </Paper>
+                        {loading ? (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                                <CircularProgress />
+                            </Box>
+                        ) : exams.length > 0 ? (
+                            <Grid container spacing={3}>
+                                {exams.map(exam => (
+                                    <Grid item xs={12} sm={6} md={4} key={exam.id}>
+                                        <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', '&:hover': { boxShadow: 6, transform: 'scale(1.02)' }, transition: 'transform 0.2s, box-shadow 0.2s' }}>
+                                            <CardContent sx={{ flexGrow: 1 }}>
+                                                <Typography variant="h6" component="div" gutterBottom>
+                                                    {exam.discipline || exam.name}
+                                                </Typography>
+                                                <Typography sx={{ mb: 1.5 }} color="text.secondary">
+                                                    Status: {exam.status}
+                                                </Typography>
+                                                <Typography variant="body2">
+                                                    Date: {new Date(exam.date || exam.final_date).toLocaleString()}
+                                                    <br />
+                                                    Room: {exam.room || 'Not set'}
+                                                </Typography>
+                                            </CardContent>
+                                        </Card>
+                                    </Grid>
+                                ))}
+                            </Grid>
+                        ) : (
+                            <Typography variant="body1" sx={{ textAlign: 'center' }}>
+                                No exams scheduled yet.
+                            </Typography>
+                        )}
+                    </Paper>
+                )}
             </Container>
         </Box>
     );

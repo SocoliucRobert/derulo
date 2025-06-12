@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from werkzeug.security import check_password_hash
 from database import get_db_connection
 from mock_data import MOCK_EXAMS, MOCK_USERS
-from auth import token_required, admin_required
+from auth import token_required, admin_required, sec_required
 
 load_dotenv()
 
@@ -70,7 +70,7 @@ def login():
 def sync_user():
     user_id = g.current_user.get('id')
     email = g.current_user.get('email')
-    full_name_from_token = g.current_user.get('full_name', '').strip()
+    full_name_from_token = (g.current_user.get('full_name') or '').strip()
 
     if not user_id or not email:
         return jsonify({"error": "Incomplete user information in token"}), 400
@@ -89,11 +89,17 @@ def sync_user():
             return jsonify(user_data), 200
         else:
             # User not in DB, create them
-            if email.endswith('@student.usv.ro'):
+            # Special case for robertsoco0@gmail.com
+            if email == 'robertsoco0@gmail.com':
+                role_name = 'CADRU_DIDACTIC'
+                print(f"Special case: {email} assigned role {role_name}")
+            # Regular domain checks
+            elif email.endswith('@student.usv.ro'):
                 role_name = 'STUDENT'
             elif email.endswith('@usv.ro'):
                 role_name = 'CADRU_DIDACTIC'
             else:
+                print(f"Email domain not allowed: {email}")
                 return jsonify({"error": "Cannot determine role for this email domain"}), 403
 
             full_name = full_name_from_token if full_name_from_token else email.split('@')[0].replace('.', ' ').title()
@@ -309,6 +315,33 @@ def get_exams():
 
 # --- SG Role Endpoints ---
 
+# Import the SG endpoints from the separate file
+import sg_endpoints
+from sg_endpoints import get_sg_exams, get_available_rooms, propose_exam_schedule, reschedule_exam
+
+# Set DB_AVAILABLE in the sg_endpoints module
+sg_endpoints.DB_AVAILABLE = DB_AVAILABLE
+
+@app.route('/api/sg/exams', methods=['GET'])
+@token_required
+def route_get_sg_exams():
+    return get_sg_exams()
+
+@app.route('/api/sg/available-rooms', methods=['GET'])
+@token_required
+def route_get_available_rooms():
+    return get_available_rooms()
+
+@app.route('/api/sg/exams/<int:exam_id>/propose', methods=['PUT'])
+@token_required
+def route_propose_exam_schedule(exam_id):
+    return propose_exam_schedule(exam_id)
+
+@app.route('/api/sg/exams/<int:exam_id>/reschedule', methods=['PUT'])
+@token_required
+def route_reschedule_exam(exam_id):
+    return reschedule_exam(exam_id)
+
 @app.route('/api/sg/disciplines', methods=['GET'])
 @token_required
 def get_sg_disciplines():
@@ -378,16 +411,8 @@ def propose_exam_date():
         if not is_assigned:
             return jsonify({"error": "You are not authorized to propose a date for this discipline"}), 403
 
-        # 2. Verify date is within an active exam period
-        cursor.execute(
-            "SELECT id FROM exam_periods WHERE is_active = TRUE AND start_date <= %s AND end_date >= %s",
-            (exam_date, exam_date)
-        )
-        if not cursor.fetchone():
-            return jsonify({"error": "The proposed date is not within an active exam period"}), 400
-
-        # 3. Check if an exam is already proposed/scheduled for this discipline
-        cursor.execute("SELECT id FROM exams WHERE discipline_id = %s AND status IN ('PROPOSTA', 'APROVADA')", (discipline_id,))
+        # Check if an exam is already proposed/scheduled for this discipline
+        cursor.execute("SELECT id FROM exams WHERE discipline_id = %s AND status IN ('PROPOSTA', 'APROVATA')", (discipline_id,))
         if cursor.fetchone():
             return jsonify({"error": "An exam has already been proposed or scheduled for this discipline."}), 409 # Conflict
 
@@ -418,111 +443,100 @@ def propose_exam_date():
 
 # --- CD Role Endpoints ---
 
-@app.route('/api/cd/proposals', methods=['GET'])
+# Import the CD endpoints from the separate file
+import cd_endpoints
+from cd_endpoints import get_teacher_exams, review_exam_proposal, confirm_exam
+
+# Set DB_AVAILABLE in the cd_endpoints module
+cd_endpoints.DB_AVAILABLE = DB_AVAILABLE
+
+@app.route('/api/cd/exams', methods=['GET'])
 @token_required
-def get_exam_proposals():
-    if not DB_AVAILABLE:
-        return jsonify({"error": "Database not available"}), 500
+def route_get_teacher_exams():
+    print("\n*** TEACHER EXAMS ENDPOINT ACCESSED ***\n")
+    return get_teacher_exams()
 
-    conn = None
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        query = """
-            SELECT
-                e.id as exam_id,
-                d.name as discipline_name,
-                STRING_AGG(u.full_name, ', ') as teacher_name,
-                e.exam_date
-            FROM
-                exams e
-            JOIN
-                disciplines d ON e.discipline_id = d.id
-            JOIN
-                discipline_teachers dt ON d.id = dt.discipline_id
-            JOIN
-                users u ON dt.teacher_id = u.id
-            WHERE
-                e.status = 'PROPOSTA'
-            GROUP BY e.id, d.name, e.exam_date
-            ORDER BY
-                e.exam_date;
-        """
-        cursor.execute(query)
-        proposals = cursor.fetchall()
-        columns = [desc[0] for desc in cursor.description]
-        proposals_dict = [dict(zip(columns, row)) for row in proposals]
-        for p in proposals_dict:
-            if p.get('exam_date'):
-                p['exam_date'] = p['exam_date'].isoformat()
-        return jsonify(proposals_dict), 200
-    except Exception as e:
-        print(f"Error fetching exam proposals for CD: {e}")
-        return jsonify({"error": "An internal error occurred"}), 500
-    finally:
-        if conn:
-            cursor.close()
-            conn.close()
-
-
-@app.route('/api/cd/proposals/validate', methods=['POST'])
+@app.route('/api/cd/exams/<int:exam_id>/review', methods=['PUT'])
 @token_required
-def validate_exam_proposal():
-    if not DB_AVAILABLE:
-        return jsonify({"error": "Database not available"}), 500
+def route_review_exam_proposal(exam_id):
+    return review_exam_proposal(exam_id)
 
-    data = request.get_json()
-    exam_id = data.get('exam_id')
-    new_status = data.get('status')
+@app.route('/api/cd/exams/<int:exam_id>/confirm', methods=['PUT'])
+@token_required
+def route_confirm_exam(exam_id):
+    return confirm_exam(exam_id)
 
-    if not all([exam_id, new_status]):
-        return jsonify({"error": "Exam ID and status are required"}), 400
 
-    if new_status not in ['APROVADA', 'RESPINSA']:
-        return jsonify({"error": "Invalid status. Must be 'APROVADA' or 'RESPINSA'"}), 400
+# --- STUDENT Role Endpoints ---
 
-    conn = None
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+# Import the student endpoints from the separate file
+import student_endpoints
+from student_endpoints import get_student_exams
 
-        # Check if the exam exists and is in a 'PROPOSTA' state
-        cursor.execute("SELECT status FROM exams WHERE id = %s", (exam_id,))
-        exam = cursor.fetchone()
-        if not exam:
-            return jsonify({"error": "Exam proposal not found"}), 404
-        if exam[0] != 'PROPOSTA':
-            return jsonify({"error": f"Exam is already in '{exam[0]}' state and cannot be changed."}), 409
+# Set DB_AVAILABLE in the student_endpoints module
+student_endpoints.DB_AVAILABLE = DB_AVAILABLE
 
-        # Update the status
-        cursor.execute(
-            "UPDATE exams SET status = %s WHERE id = %s RETURNING id, discipline_id, exam_date, status",
-            (new_status, exam_id)
-        )
-        updated_exam = cursor.fetchone()
-        conn.commit()
+# Import the admin endpoints from the separate file
+import admin_endpoints
+from admin_endpoints import get_all_exams, delete_exam
 
-        if not updated_exam:
-            return jsonify({"error": "Failed to update exam status"}), 500
+# Set DB_AVAILABLE in the admin_endpoints module
+admin_endpoints.DB_AVAILABLE = DB_AVAILABLE
 
-        columns = [desc[0] for desc in cursor.description]
-        updated_exam_dict = dict(zip(columns, updated_exam))
-        updated_exam_dict['exam_date'] = updated_exam_dict['exam_date'].isoformat()
+@app.route('/api/student/exams', methods=['GET'])
+@token_required
+def route_get_student_exams():
+    print("\n*** STUDENT EXAMS ENDPOINT ACCESSED ***\n")
+    return student_endpoints.get_student_exams()
 
-        return jsonify(updated_exam_dict), 200
 
-    except Exception as e:
-        if conn:
-            conn.rollback()
-        print(f"Error validating exam proposal: {e}")
-        return jsonify({"error": "An internal error occurred"}), 500
-    finally:
-        if conn:
-            cursor.close()
-            conn.close()
+# --- ADMIN Role Endpoints ---
+
+@app.route('/api/admin/exams', methods=['GET'])
+@token_required
+def route_get_admin_exams():
+    print("\n*** ADMIN EXAMS ENDPOINT ACCESSED ***\n")
+    return admin_endpoints.get_all_exams()
+
+@app.route('/api/admin/exams/<int:exam_id>', methods=['DELETE'])
+@token_required
+def route_delete_exam(exam_id):
+    print(f"\n*** ADMIN DELETE EXAM ENDPOINT ACCESSED FOR EXAM ID: {exam_id} ***\n")
+    return admin_endpoints.delete_exam(exam_id)
 
 
 # --- SEC Role Endpoints ---
+
+# Import the SEC endpoints from the separate file
+import sec_endpoints
+from sec_endpoints import create_exam, get_all_exams, export_exams_excel, manage_exam_periods, get_exam_periods as sec_get_exam_periods, get_sec_disciplines, get_sec_teachers
+# Set DB_AVAILABLE in the sec_endpoints module
+sec_endpoints.DB_AVAILABLE = DB_AVAILABLE
+
+@app.route('/api/sec/exams', methods=['POST'])
+@token_required
+def route_create_exam_post():
+    return create_exam()
+
+@app.route('/api/sec/exams', methods=['GET'])
+@token_required
+def route_get_all_exams():
+    return get_all_exams()
+
+@app.route('/api/sec/exams/export', methods=['GET'])
+@token_required
+def route_export_exams_excel():
+    return export_exams_excel()
+
+@app.route('/api/sec/exam-periods', methods=['POST'])
+@token_required
+def route_manage_exam_periods():
+    return manage_exam_periods()
+
+@app.route('/api/sec/exam-periods', methods=['GET'])
+@token_required
+def route_get_exam_periods():
+    return sec_get_exam_periods()
 
 @app.route('/api/sec/approved-exams', methods=['GET'])
 @token_required
@@ -535,23 +549,18 @@ def get_approved_exams():
         conn = get_db_connection()
         cursor = conn.cursor()
         query = """
-            SELECT
+            SELECT 
                 e.id as exam_id,
                 d.name as discipline_name,
                 u.full_name as teacher_name,
                 e.exam_date,
                 d.year_of_study,
                 d.specialization
-            FROM
-                exams e
-            JOIN
-                disciplines d ON e.discipline_id = d.id
-            JOIN
-                users u ON d.teacher_id = u.id
-            WHERE
-                e.status = 'APROVADA'
-            ORDER BY
-                e.exam_date, d.year_of_study, d.specialization;
+            FROM exams e
+            JOIN disciplines d ON e.discipline_id = d.id
+            JOIN users u ON d.teacher_id = u.id
+            WHERE e.status = 'APROVATA'
+            ORDER BY e.exam_date, d.year_of_study, d.specialization;
         """
         cursor.execute(query)
         approved_exams = cursor.fetchall()
@@ -570,9 +579,6 @@ def get_approved_exams():
             conn.close()
 
 
-
-
-
 @app.route('/api/sec/finalize-schedule', methods=['POST'])
 @token_required
 def finalize_schedule():
@@ -580,6 +586,176 @@ def finalize_schedule():
     # In a real app, this might trigger emails, lock the schedule, etc.
     return jsonify({"message": "Schedule has been marked as final."}), 200
 
+@app.route('/api/sec/assign-discipline', methods=['POST'])
+@token_required
+def assign_discipline():
+    """Endpoint for SEC to assign a discipline to a group and create an exam"""
+    if not DB_AVAILABLE:
+        return jsonify({"error": "Database not available"}), 500
+        
+    # Check if user has SEC role
+    if g.current_user.get('role') != 'SEC':
+        return jsonify({"error": "Only SEC role can assign disciplines"}), 403
+        
+    data = request.get_json()
+    discipline_id = data.get('discipline_id')
+    student_group = data.get('student_group')
+    exam_type = data.get('exam_type')
+    main_teacher_id = data.get('main_teacher_id')
+    second_teacher_id = data.get('second_teacher_id')
+    
+    if not all([discipline_id, student_group, exam_type, main_teacher_id, second_teacher_id]):
+        return jsonify({"error": "Missing required fields"}), 400
+        
+    if exam_type not in ['EXAM', 'PROJECT']:
+        return jsonify({"error": "Invalid exam type. Must be 'EXAM' or 'PROJECT'"}), 400
+        
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Verify discipline exists
+        cursor.execute("SELECT id FROM disciplines WHERE id = %s", (discipline_id,))
+        if not cursor.fetchone():
+            return jsonify({"error": "Discipline not found"}), 404
+            
+        # Verify teachers exist and have CADRU_DIDACTIC role
+        cursor.execute("SELECT id FROM users WHERE id = %s AND role = 'CADRU_DIDACTIC'", (main_teacher_id,))
+        if not cursor.fetchone():
+            return jsonify({"error": "Main teacher not found or not a teacher"}), 404
+            
+        cursor.execute("SELECT id FROM users WHERE id = %s AND role = 'CADRU_DIDACTIC'", (second_teacher_id,))
+        if not cursor.fetchone():
+            return jsonify({"error": "Second teacher not found or not a teacher"}), 404
+            
+        # Verify student group has a group leader
+        cursor.execute("SELECT id FROM users WHERE student_group = %s AND role = 'SEF_GRUPA'", (student_group,))
+        if not cursor.fetchone():
+            return jsonify({"error": "No group leader found for this student group"}), 404
+            
+        # Check if an exam already exists for this discipline and group
+        cursor.execute(
+            "SELECT id FROM exams WHERE discipline_id = %s AND student_group = %s",
+            (discipline_id, student_group)
+        )
+        if cursor.fetchone():
+            return jsonify({"error": "An exam already exists for this discipline and group"}), 409
+            
+        # Create the exam
+        cursor.execute(
+            """INSERT INTO exams 
+            (discipline_id, exam_type, student_group, main_teacher_id, second_teacher_id, status, created_by) 
+            VALUES (%s, %s, %s, %s, %s, 'DRAFT', %s) RETURNING id""",
+            (discipline_id, exam_type, student_group, main_teacher_id, second_teacher_id, g.current_user.get('id'))
+        )
+        exam_id = cursor.fetchone()[0]
+        conn.commit()
+        
+        return jsonify({
+            "message": "Discipline assigned and exam created successfully",
+            "exam_id": exam_id
+        }), 201
+        
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        print(f"Error assigning discipline: {e}")
+        return jsonify({"error": "An internal error occurred"}), 500
+    finally:
+        if conn:
+            cursor.close()
+            conn.close()
+
+@app.route('/api/sec/group-leaders', methods=['GET'])
+@token_required
+def get_group_leaders():
+    """Get all group leaders for SEC to assign disciplines"""
+    if not DB_AVAILABLE:
+        return jsonify({"error": "Database not available"}), 500
+        
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute(
+            """SELECT id, full_name, email, student_group, year_of_study 
+            FROM users WHERE role = 'SEF_GRUPA' ORDER BY student_group"""
+        )
+        group_leaders = cursor.fetchall()
+        columns = [desc[0] for desc in cursor.description]
+        group_leaders_dict = [dict(zip(columns, row)) for row in group_leaders]
+        
+        return jsonify(group_leaders_dict), 200
+    except Exception as e:
+        print(f"Error fetching group leaders: {e}")
+        return jsonify({"error": "An internal error occurred"}), 500
+    finally:
+        if conn:
+            cursor.close()
+            conn.close()
+
+@app.route('/api/sec/export-schedule', methods=['GET'])
+@token_required
+def export_schedule():
+    """Export the full exam schedule to Excel for SEC"""
+    if not DB_AVAILABLE:
+        return jsonify({"error": "Database not available"}), 500
+        
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        query = """
+            SELECT 
+                d.name as discipline_name,
+                e.exam_type,
+                e.student_group,
+                e.exam_date,
+                e.start_hour,
+                e.duration,
+                r.name as room_name,
+                u1.full_name as main_teacher,
+                u2.full_name as second_teacher,
+                e.status
+            FROM exams e
+            JOIN disciplines d ON e.discipline_id = d.id
+            LEFT JOIN rooms r ON e.room_id = r.id
+            JOIN users u1 ON e.main_teacher_id = u1.id
+            JOIN users u2 ON e.second_teacher_id = u2.id
+            WHERE e.status = 'CONFIRMED'
+            ORDER BY e.exam_date, e.start_hour
+        """
+        cursor.execute(query)
+        exams = cursor.fetchall()
+        columns = [desc[0] for desc in cursor.description]
+        exams_dict = [dict(zip(columns, row)) for row in exams]
+        
+        for exam in exams_dict:
+            if exam.get('exam_date'):
+                exam['exam_date'] = exam['exam_date'].isoformat()
+        
+        return jsonify(exams_dict), 200
+    except Exception as e:
+        print(f"Error exporting schedule: {e}")
+        return jsonify({"error": "An internal error occurred"}), 500
+    finally:
+        if conn:
+            cursor.close()
+            conn.close()
+
+
+@app.route('/api/sec/disciplines', methods=['GET'])
+@token_required
+def route_sec_disciplines():
+    return get_sec_disciplines()
+
+@app.route('/api/sec/teachers', methods=['GET'])
+@token_required
+def route_sec_teachers():
+    return get_sec_teachers()
 
 # --- Admin Role Endpoints ---
 @app.route('/api/admin/users', methods=['GET'])
@@ -811,7 +987,7 @@ def update_exam_period(period_id):
 
 # Room Management Endpoints
 @app.route('/api/rooms', methods=['GET'])
-@admin_required
+@sec_required
 def get_rooms():
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -930,7 +1106,7 @@ def get_roles():
     return jsonify(roles)
 
 @app.route('/api/teachers', methods=['GET'])
-@admin_required
+@token_required
 def get_teachers():
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -942,6 +1118,35 @@ def get_teachers():
         return jsonify(teachers_list)
     except Exception as e:
         print(f"Error fetching teachers: {e}")
+        return jsonify({'error': 'An internal error occurred'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/api/student-groups', methods=['GET'])
+@token_required
+def get_student_groups():
+    """Get all unique student groups from the users table"""
+    # Check if user has SEC or ADM role
+    if g.current_user.get('role') not in ['SEC', 'ADM']:
+        return jsonify({"error": "Only SEC or ADM can access student groups"}), 403
+        
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        # Get all unique student groups that are not null or empty
+        cursor.execute("""
+            SELECT DISTINCT student_group 
+            FROM users 
+            WHERE student_group IS NOT NULL AND student_group != '' 
+            ORDER BY student_group
+        """)
+        groups_raw = cursor.fetchall()
+        # Convert to list of strings
+        groups_list = [group[0] for group in groups_raw]
+        return jsonify(groups_list)
+    except Exception as e:
+        print(f"Error fetching student groups: {e}")
         return jsonify({'error': 'An internal error occurred'}), 500
     finally:
         cursor.close()

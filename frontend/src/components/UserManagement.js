@@ -23,9 +23,27 @@ const UserManagement = ({ session }) => {
                 'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
             }
         })
-        .then(res => res.json())
-        .then(data => setUsers(data))
-        .catch(err => setError(err.message));
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Failed to fetch users. You may not have admin privileges.');
+            }
+            return res.json();
+        })
+        .then(data => {
+            // Ensure data is an array before setting it
+            if (Array.isArray(data)) {
+                setUsers(data);
+            } else {
+                console.error('Expected array of users but got:', data);
+                setUsers([]); // Set to empty array to prevent map() error
+                setError('Invalid data format received from server');
+            }
+        })
+        .catch(err => {
+            console.error('Error fetching users:', err);
+            setError(err.message);
+            setUsers([]); // Ensure users is always an array
+        });
     };
 
     const fetchRoles = () => {

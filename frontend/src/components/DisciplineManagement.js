@@ -293,7 +293,7 @@ const DisciplineManagement = () => {
                                             <TableCell>{d.name}</TableCell>
                                             <TableCell>{d.teachers ? d.teachers.map(t => t.full_name).join(', ') : 'N/A'}</TableCell>
                                             <TableCell align="right">
-                                                <IconButton onClick={() => handleEditClick(d)}><EditIcon /></IconButton>
+                                                <IconButton onClick={() => handleEditClick(d)} color="primary"><EditIcon /></IconButton>
                                                 <IconButton onClick={() => setDeleteConfirm({ open: true, id: d.id })}><DeleteIcon color="error" /></IconButton>
                                             </TableCell>
                                         </>
