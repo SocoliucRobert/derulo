@@ -93,16 +93,15 @@ This is a full-stack application for managing exam schedules at FIESC.
     *   Enable the `Google` provider and follow the instructions to add your Google OAuth credentials (Client ID and Client Secret). You can get these from the [Google Cloud Console](https://console.cloud.google.com/).
     *   Make sure to add `http://localhost:3000` to the list of authorized redirect URIs in your Google Cloud OAuth consent screen configuration.
 
-## Docker Setup (Alternative Method)
+## Docker Setup
 
-You can also run the entire application using Docker, which simplifies setup across different environments.
+You can run the entire application using Docker, which simplifies setup across different environments.
 
 ### Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
 
-### Step-by-Step Instructions
+### Option 1: Using Docker CLI (Recommended)
 
 1. **Clone the Repository:**
    ```bash
@@ -110,39 +109,101 @@ You can also run the entire application using Docker, which simplifies setup acr
    cd derulo
    ```
 
-2. **Verify Environment Variables:**
-   The docker-compose.yml file already includes the necessary environment variables:
-   - Database credentials
-   - Supabase configuration
-   - Secret keys
-   
-   If you need to modify any values, edit the `docker-compose.yml` file directly.
-
-3. **Build and Start the Containers:**
+2. **Create a Docker Network:**
    ```bash
-   docker-compose up -d
+   docker network create derulo-network
    ```
-   This command builds and starts all services in detached mode.
+
+3. **Start PostgreSQL Database:**
+   ```bash
+   docker run -d --name derulo-postgres \
+     --network derulo-network \
+     -e POSTGRES_USER=postgres \
+     -e POSTGRES_PASSWORD=student123 \
+     -e POSTGRES_DB=exam \
+     -p 5432:5432 \
+     -v postgres_data:/var/lib/postgresql/data \
+     postgres:13
+   ```
+
+4. **Build and Start Backend:**
+   ```bash
+   # Build backend image
+   docker build -t derulo-backend ./backend
+   
+   # Run backend container
+   docker run -d --name derulo-backend \
+     --network derulo-network \
+     -e DATABASE_URL=postgresql://postgres:student123@derulo-postgres:5432/exam \
+     -e FLASK_ENV=development \
+     -e FLASK_APP=app.py \
+     -e FLASK_DEBUG=1 \
+     -e SECRET_KEY=d2a8f3c6e4b1a9d8c7b6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4 \
+     -e SUPABASE_URL=https://vbopkjfdndwrwwysjfyy.supabase.co \
+     -e SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZib3BramZkbmR3cnd3eXNqZnl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk2MTU2MTAsImV4cCI6MjA2NTE5MTYxMH0.LVIaEPQCChFiPpgJHaUZOv1DKcTrbju-Sr476T1Z5Hs \
+     -e SUPABASE_JWT_SECRET=NHKbGT35MB9mAeqjV4OGRx8zemYCqUuQnvXpJyJWLb1PErQEdPesubtRryrVyR6dHUiA+5jZeNRrZqfyp2d6ZA== \
+     -p 5000:5000 \
+     derulo-backend
+   ```
    
    **Note:** The backend container automatically runs both `init_db.py` and `populate_db.py` scripts on startup to initialize and populate the database with sample data.
 
-4. **Access the Application:**
+5. **Build and Start Frontend:**
+   ```bash
+   # Build frontend image
+   docker build -t derulo-frontend ./frontend
+   
+   # Run frontend container
+   docker run -d --name derulo-frontend \
+     --network derulo-network \
+     -p 80:80 \
+     derulo-frontend
+   ```
+
+6. **Access the Application:**
    - Frontend: http://localhost
    - Backend API: http://localhost:5000
 
-5. **View Logs (Optional):**
+7. **View Logs (Optional):**
    ```bash
-   # View all logs
-   docker-compose logs
-   
    # View specific service logs
-   docker-compose logs backend
-   docker-compose logs frontend
+   docker logs derulo-backend
+   docker logs derulo-frontend
+   docker logs derulo-postgres
    ```
 
-6. **Stop the Application:**
+8. **Stop and Remove All Containers:**
+   ```bash
+   docker stop derulo-frontend derulo-backend derulo-postgres
+   docker rm derulo-frontend derulo-backend derulo-postgres
+   ```
+
+### Option 2: Using Docker Compose (Alternative)
+
+If Docker Compose is available on your system, you can use it as an alternative:
+
+1. **Clone the Repository:**
+   ```bash
+   git clone https://github.com/SocoliucRobert/derulo.git
+   cd derulo
+   ```
+
+2. **Build and Start the Containers:**
+   ```bash
+   docker-compose up -d
+   ```
+   or
+   ```bash
+   docker compose up -d
+   ```
+   
+3. **Stop the Application:**
    ```bash
    docker-compose down
+   ```
+   or
+   ```bash
+   docker compose down
    ```
 
 ### Troubleshooting Docker Setup
