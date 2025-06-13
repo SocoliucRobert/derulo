@@ -176,14 +176,11 @@ def export_exams_excel():
         
         query = """
             SELECT 
-                e.id,
                 d.name as discipline_name,
                 e.exam_type,
                 e.student_group,
-                e.status,
                 e.exam_date,
                 e.start_hour,
-                e.duration,
                 r.name as room_name,
                 u1.full_name as main_teacher,
                 u2.full_name as second_teacher
@@ -202,20 +199,21 @@ def export_exams_excel():
         # Create DataFrame
         df = pd.DataFrame(exams, columns=columns)
         
-        # Format date columns
+        # Format date and time columns separately
         if 'exam_date' in df.columns and not df.empty:
             df['exam_date'] = df['exam_date'].apply(lambda x: x.strftime('%Y-%m-%d') if x else '')
             
+        # Format time as HH.00
+        if 'start_hour' in df.columns and not df.empty:
+            df['start_hour'] = df['start_hour'].apply(lambda x: f"{x}.00" if x else '')
+            
         # Rename columns for better readability
         column_mapping = {
-            'id': 'Exam ID',
             'discipline_name': 'Discipline',
             'exam_type': 'Type',
             'student_group': 'Student Group',
-            'status': 'Status',
             'exam_date': 'Date',
-            'start_hour': 'Start Time',
-            'duration': 'Duration (min)',
+            'start_hour': 'Time',
             'room_name': 'Room',
             'main_teacher': 'Main Teacher',
             'second_teacher': 'Second Teacher'

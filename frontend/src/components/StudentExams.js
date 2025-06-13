@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
     Typography, Container, Box, Grid, CircularProgress, Snackbar, Alert, Paper,
-    Avatar
+    Avatar, TextField, Button
 } from '@mui/material';
 import EventIcon from '@mui/icons-material/Event';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -13,10 +13,104 @@ const StudentExams = ({ session }) => {
     const [exams, setExams] = useState([]);
     const [loading, setLoading] = useState(true);
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
+    const [studentInfo, setStudentInfo] = useState({
+        student_group: '',
+        year_of_study: ''
+    });
+    const [isEditing, setIsEditing] = useState(false);
+    const [saving, setSaving] = useState(false);
 
     const handleCloseSnackbar = () => {
         setSnackbar({ ...snackbar, open: false });
     };
+    
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setStudentInfo(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+    
+    const handleEditToggle = () => {
+        setIsEditing(!isEditing);
+    };
+    
+    const handleSaveStudentInfo = async () => {
+        try {
+            setSaving(true);
+            
+            const response = await fetch('/api/student/info', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${session.access_token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    student_group: studentInfo.student_group,
+                    year_of_study: studentInfo.year_of_study ? parseInt(studentInfo.year_of_study, 10) : null
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to save student information.');
+            }
+            
+            const data = await response.json();
+            setStudentInfo({
+                student_group: data.student_group || '',
+                year_of_study: data.year_of_study || ''
+            });
+            
+            setSnackbar({
+                open: true,
+                message: 'Student information saved successfully!',
+                severity: 'success'
+            });
+            
+            // After saving student info, refresh exams to show exams for the updated group
+            fetchExams();
+            
+            setIsEditing(false);
+        } catch (error) {
+            setSnackbar({
+                open: true,
+                message: error.message || 'Failed to save student information.',
+                severity: 'error'
+            });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const fetchStudentInfo = useCallback(async () => {
+        try {
+            const response = await fetch('/api/student/info', {
+                headers: {
+                    'Authorization': `Bearer ${session.access_token}`
+                }
+            });
+            
+            if (!response.ok) {
+                // If 404, it means the student info is not set yet
+                if (response.status === 404) {
+                    return;
+                }
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to fetch student information.');
+            }
+            
+            const data = await response.json();
+            setStudentInfo({
+                student_group: data.student_group || '',
+                year_of_study: data.year_of_study || ''
+            });
+        } catch (error) {
+            console.error('Error fetching student info:', error);
+            // Don't show error snackbar for this, as it's not critical
+        }
+    }, [session.access_token]);
 
     const fetchExams = useCallback(async () => {
         try {
@@ -44,8 +138,9 @@ const StudentExams = ({ session }) => {
     }, [session.access_token]);
 
     useEffect(() => {
+        fetchStudentInfo();
         fetchExams();
-    }, [fetchExams]);
+    }, [fetchStudentInfo, fetchExams]);
 
     // Format date nicely
     const formatDate = (dateString) => {
@@ -70,6 +165,110 @@ const StudentExams = ({ session }) => {
             <Typography variant="h4" sx={{ fontWeight: 700, color: '#1976d2', mb: 3, textAlign: 'center' }}>
                 My Exam Schedule
             </Typography>
+            
+            {/* Student Information Card */}
+            <Paper 
+                elevation={3} 
+                sx={{ 
+                    mb: 4, 
+                    borderRadius: '16px', 
+                    overflow: 'hidden',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    '&:hover': { 
+                        transform: 'translateY(-4px)', 
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.15)' 
+                    }
+                }}
+            >
+                <Box sx={{ 
+                    p: 2, 
+                    background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
+                    color: 'white',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Avatar sx={{ bgcolor: 'white', color: '#1976d2', mr: 2 }}>
+                            <PersonIcon />
+                        </Avatar>
+                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                            Student Information
+                        </Typography>
+                    </Box>
+                    <Button 
+                        variant="contained" 
+                        color="inherit" 
+                        onClick={handleEditToggle}
+                        size="small"
+                        startIcon={isEditing ? null : <EventIcon />}
+                        sx={{ 
+                            color: '#1976d2', 
+                            bgcolor: 'white',
+                            '&:hover': { bgcolor: '#f5f5f5' }
+                        }}
+                    >
+                        {isEditing ? "Cancel" : "Edit"}
+                    </Button>
+                </Box>
+                <Box sx={{ p: 2.5 }}>
+                    
+                    {isEditing ? (
+                        <Box component="form" sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+                            <TextField
+                                name="student_group"
+                                label="Student Group"
+                                value={studentInfo.student_group}
+                                onChange={handleInputChange}
+                                fullWidth
+                                variant="outlined"
+                                size="small"
+                                placeholder="e.g., 3A4"
+                            />
+                            <TextField
+                                name="year_of_study"
+                                label="Study Year"
+                                value={studentInfo.year_of_study}
+                                onChange={handleInputChange}
+                                fullWidth
+                                variant="outlined"
+                                size="small"
+                                placeholder="e.g., 3"
+                                type="number"
+                                inputProps={{ min: 1, max: 6 }}
+                            />
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={handleSaveStudentInfo}
+                                disabled={saving}
+                                sx={{ minWidth: '120px' }}
+                            >
+                                {saving ? "Saving..." : "Save"}
+                            </Button>
+                        </Box>
+                    ) : (
+                        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 4 }}>
+                            <Box>
+                                <Typography variant="body2" color="text.secondary">
+                                    Student Group
+                                </Typography>
+                                <Typography variant="body1" fontWeight={500}>
+                                    {studentInfo.student_group || "Not set"}
+                                </Typography>
+                            </Box>
+                            <Box>
+                                <Typography variant="body2" color="text.secondary">
+                                    Study Year
+                                </Typography>
+                                <Typography variant="body1" fontWeight={500}>
+                                    {studentInfo.year_of_study || "Not set"}
+                                </Typography>
+                            </Box>
+                        </Box>
+                    )}
+                </Box>
+            </Paper>
             
             {loading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', my: 6 }}>

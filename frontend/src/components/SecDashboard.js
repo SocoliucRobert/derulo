@@ -2,17 +2,18 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import {
     AppBar, Toolbar, Typography, Button, Container, Box, Grid, Card,
-    CardContent, CardActions, Divider, Snackbar, Alert, Stack
+    CardContent, CardActions, Divider, Snackbar, Alert, Stack, ButtonGroup
 } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ExamAssignment from './ExamAssignment';
 
 const SecDashboard = ({ session }) => {
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
     const [approvedExams, setApprovedExams] = useState([]);
     const [loadingExams, setLoadingExams] = useState(true);
-    const [downloading, setDownloading] = useState(false);
+    const [downloading, setDownloading] = useState({ excel: false, pdf: false });
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -44,7 +45,7 @@ const SecDashboard = ({ session }) => {
 
     const handleDownloadExcel = async () => {
         try {
-            setDownloading(true);
+            setDownloading(prev => ({ ...prev, excel: true }));
             const response = await fetch('/api/sec/exams/export', {
                 headers: { 'Authorization': `Bearer ${session.access_token}` }
             });
@@ -62,7 +63,31 @@ const SecDashboard = ({ session }) => {
         } catch (error) {
             setSnackbar({ open: true, message: error.message, severity: 'error' });
         } finally {
-            setDownloading(false);
+            setDownloading(prev => ({ ...prev, excel: false }));
+        }
+    };
+
+    const handleDownloadPdf = async () => {
+        try {
+            setDownloading(prev => ({ ...prev, pdf: true }));
+            const response = await fetch('/api/sec/exams/export-pdf', {
+                headers: { 'Authorization': `Bearer ${session.access_token}` }
+            });
+            if (!response.ok) throw new Error('Failed to download PDF.');
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            const date = new Date().toISOString().split('T')[0];
+            link.setAttribute('download', `exam_schedule_${date}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+            setSnackbar({ open: true, message: 'PDF file downloaded successfully!', severity: 'success' });
+        } catch (error) {
+            setSnackbar({ open: true, message: error.message, severity: 'error' });
+        } finally {
+            setDownloading(prev => ({ ...prev, pdf: false }));
         }
     };
 
@@ -101,17 +126,26 @@ const SecDashboard = ({ session }) => {
                             </CardContent>
                             <Divider />
                             <CardActions sx={{ p: 2, justifyContent: 'center' }}>
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    size="large"
-                                    startIcon={<DownloadIcon />}
-                                    onClick={handleDownloadExcel}
-                                    disabled={loadingExams || approvedExams.length === 0 || downloading}
-                                    sx={{ px: 4, py: 1 }}
-                                >
-                                    {downloading ? 'Downloading...' : `Download Excel (${approvedExams.length} exams)`}
-                                </Button>
+                                <ButtonGroup variant="contained" size="large" aria-label="download options">
+                                    <Button
+                                        color="primary"
+                                        startIcon={<DownloadIcon />}
+                                        onClick={handleDownloadExcel}
+                                        disabled={loadingExams || approvedExams.length === 0 || downloading.excel || downloading.pdf}
+                                        sx={{ px: 3, py: 1 }}
+                                    >
+                                        {downloading.excel ? 'Downloading...' : `Excel (${approvedExams.length} exams)`}
+                                    </Button>
+                                    <Button
+                                        color="secondary"
+                                        startIcon={<PictureAsPdfIcon />}
+                                        onClick={handleDownloadPdf}
+                                        disabled={loadingExams || approvedExams.length === 0 || downloading.excel || downloading.pdf}
+                                        sx={{ px: 3, py: 1 }}
+                                    >
+                                        {downloading.pdf ? 'Downloading...' : `PDF (${approvedExams.length} exams)`}
+                                    </Button>
+                                </ButtonGroup>
                             </CardActions>
                         </Card>
                     </Grid>

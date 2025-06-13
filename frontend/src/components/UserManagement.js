@@ -4,10 +4,11 @@ import {
     Container,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
     Button, TextField, Select, MenuItem, FormControl, Box, Typography, Alert,
-    IconButton
+    IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import LockResetIcon from '@mui/icons-material/LockReset';
 
 const UserManagement = ({ session }) => {
     const [users, setUsers] = useState([]);
@@ -16,6 +17,12 @@ const UserManagement = ({ session }) => {
     const [editedUser, setEditedUser] = useState({});
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+    const [passwordData, setPasswordData] = useState({
+        current_password: '',
+        new_password: '',
+        confirm_password: ''
+    });
 
     const fetchUsers = () => {
         fetch('http://localhost:5000/api/users', {
@@ -48,7 +55,9 @@ const UserManagement = ({ session }) => {
 
     const fetchRoles = () => {
         // Hardcoded for now, but could be fetched from the backend
-        setRoles(['STUDENT', 'CADRU_DIDACTIC', 'ADMIN', 'SEF_GRUPA', 'SEC']);
+        // Removed only the ADMIN role from the available roles to prevent assigning admin role
+        // All other roles remain assignable
+        setRoles(['STUDENT', 'CADRU_DIDACTIC', 'SEF_GRUPA', 'SEC']);
     };
 
     useEffect(() => {
@@ -127,13 +136,75 @@ const UserManagement = ({ session }) => {
             .catch(err => setError(err.message));
         }
     };
+    
+    // Password change dialog handlers
+    const handleOpenPasswordDialog = () => {
+        setPasswordData({
+            current_password: '',
+            new_password: '',
+            confirm_password: ''
+        });
+        setPasswordDialogOpen(true);
+    };
+
+    const handleClosePasswordDialog = () => {
+        setPasswordDialogOpen(false);
+    };
+
+    const handlePasswordInputChange = (e) => {
+        const { name, value } = e.target;
+        setPasswordData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleChangePassword = () => {
+        // Validate passwords
+        if (passwordData.new_password !== passwordData.confirm_password) {
+            setError('New password and confirmation do not match');
+            return;
+        }
+
+        fetch('http://localhost:5000/api/admin/change-password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+            },
+            body: JSON.stringify({
+                current_password: passwordData.current_password,
+                new_password: passwordData.new_password
+            })
+        })
+        .then(res => {
+            if (res.ok) {
+                setSuccess('Admin password changed successfully!');
+                handleClosePasswordDialog();
+            } else {
+                return res.json().then(data => {
+                    throw new Error(data.error || 'Failed to change password');
+                });
+            }
+        })
+        .catch(err => {
+            setError(err.message);
+        });
+    };
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Box sx={{ my: 4 }}>
-            <Typography variant="h5" component="h2" gutterBottom>
-                User Management
-            </Typography>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                <Typography variant="h5" component="h2" gutterBottom>
+                    User Management
+                </Typography>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<LockResetIcon />}
+                    onClick={handleOpenPasswordDialog}
+                >
+                    Change Admin Password
+                </Button>
+            </Stack>
             
             {error && <Alert severity="error" onClose={() => setError('')} sx={{ mb: 2 }}>{error}</Alert>}
             {success && <Alert severity="success" onClose={() => setSuccess('')} sx={{ mb: 2 }}>{success}</Alert>}
@@ -252,6 +323,55 @@ const UserManagement = ({ session }) => {
                 </Table>
             </TableContainer>
             </Box>
+
+            {/* Password Change Dialog */}
+            <Dialog open={passwordDialogOpen} onClose={handleClosePasswordDialog}>
+                <DialogTitle>Change Admin Password</DialogTitle>
+                <DialogContent>
+                    <DialogContentText sx={{ mb: 2 }}>
+                        Change password for admin@local.com account.
+                    </DialogContentText>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        name="current_password"
+                        label="Current Password"
+                        type="password"
+                        fullWidth
+                        variant="outlined"
+                        value={passwordData.current_password}
+                        onChange={handlePasswordInputChange}
+                        sx={{ mb: 2 }}
+                    />
+                    <TextField
+                        margin="dense"
+                        name="new_password"
+                        label="New Password"
+                        type="password"
+                        fullWidth
+                        variant="outlined"
+                        value={passwordData.new_password}
+                        onChange={handlePasswordInputChange}
+                        sx={{ mb: 2 }}
+                    />
+                    <TextField
+                        margin="dense"
+                        name="confirm_password"
+                        label="Confirm New Password"
+                        type="password"
+                        fullWidth
+                        variant="outlined"
+                        value={passwordData.confirm_password}
+                        onChange={handlePasswordInputChange}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleClosePasswordDialog}>Cancel</Button>
+                    <Button onClick={handleChangePassword} variant="contained" color="primary">
+                        Change Password
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Container>
     );
 };

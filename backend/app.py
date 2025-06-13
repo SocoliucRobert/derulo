@@ -481,17 +481,36 @@ def route_confirm_exam(exam_id):
 
 # Import the student endpoints from the separate file
 import student_endpoints
-from student_endpoints import get_student_exams
+from student_endpoints import get_student_exams, get_student_info, update_student_info
 
 # Set DB_AVAILABLE in the student_endpoints module
 student_endpoints.DB_AVAILABLE = DB_AVAILABLE
 
 # Import the admin endpoints from the separate file
 import admin_endpoints
-from admin_endpoints import get_all_exams, delete_exam
+from admin_endpoints import get_all_exams as admin_get_all_exams, delete_exam
+
+# Import admin password change endpoint
+import admin_password
+from admin_password import change_admin_password
+
+# Set DB_AVAILABLE in the admin_password module
+admin_password.DB_AVAILABLE = DB_AVAILABLE
 
 # Set DB_AVAILABLE in the admin_endpoints module
 admin_endpoints.DB_AVAILABLE = DB_AVAILABLE
+
+@app.route('/api/student/info', methods=['GET'])
+@token_required
+def route_get_student_info():
+    print("\n*** STUDENT INFO GET ENDPOINT ACCESSED ***\n")
+    return student_endpoints.get_student_info()
+
+@app.route('/api/student/info', methods=['PUT'])
+@token_required
+def route_update_student_info():
+    print("\n*** STUDENT INFO UPDATE ENDPOINT ACCESSED ***\n")
+    return student_endpoints.update_student_info()
 
 @app.route('/api/student/exams', methods=['GET'])
 @token_required
@@ -514,12 +533,24 @@ def route_delete_exam(exam_id):
     print(f"\n*** ADMIN DELETE EXAM ENDPOINT ACCESSED FOR EXAM ID: {exam_id} ***\n")
     return admin_endpoints.delete_exam(exam_id)
 
+@app.route('/api/admin/change-password', methods=['POST'])
+@admin_required
+def route_change_admin_password():
+    return change_admin_password()
 
 # --- SEC Role Endpoints ---
 
+# ... (rest of the code remains the same)
 # Import the SEC endpoints from the separate file
 import sec_endpoints
 from sec_endpoints import create_exam, get_all_exams, export_exams_excel, manage_exam_periods, get_exam_periods as sec_get_exam_periods, get_sec_disciplines, get_sec_teachers
+
+# Import PDF export functionality
+import pdf_export
+from pdf_export import export_exams_pdf
+
+# Set DB_AVAILABLE in the pdf_export module
+pdf_export.DB_AVAILABLE = DB_AVAILABLE
 # Set DB_AVAILABLE in the sec_endpoints module
 sec_endpoints.DB_AVAILABLE = DB_AVAILABLE
 
@@ -534,9 +565,14 @@ def route_get_all_exams():
     return get_all_exams()
 
 @app.route('/api/sec/exams/export', methods=['GET'])
-@token_required
+@sec_required
 def route_export_exams_excel():
     return export_exams_excel()
+
+@app.route('/api/sec/exams/export-pdf', methods=['GET'])
+@sec_required
+def route_export_exams_pdf():
+    return export_exams_pdf()
 
 @app.route('/api/sec/exam-periods', methods=['POST'])
 @token_required
