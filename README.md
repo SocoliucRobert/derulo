@@ -158,3 +158,68 @@ You can also run the entire application using Docker, which simplifies setup acr
 3. **Backend API Errors:**
    - Check backend logs: `docker logs derulo-backend`
    - Verify all environment variables are correctly set
+
+4. **Docker Compose Not Recognized:**
+   - Try using `docker compose` (with a space) instead of `docker-compose`
+   - Make sure Docker Desktop is properly installed and running
+   - Restart your terminal/PowerShell after installing Docker Desktop
+   - If using Docker Engine without Docker Desktop, install Docker Compose separately: `pip install docker-compose`
+
+### Alternative: Using Docker CLI Instead of Docker Compose
+
+If you're having issues with Docker Compose, you can use these Docker CLI commands instead:
+
+1. **Create a Docker Network:**
+   ```bash
+   docker network create derulo-network
+   ```
+
+2. **Start PostgreSQL Database:**
+   ```bash
+   docker run -d --name derulo-postgres \
+     --network derulo-network \
+     -e POSTGRES_USER=postgres \
+     -e POSTGRES_PASSWORD=student123 \
+     -e POSTGRES_DB=exam \
+     -p 5432:5432 \
+     -v postgres_data:/var/lib/postgresql/data \
+     postgres:13
+   ```
+
+3. **Build and Start Backend:**
+   ```bash
+   # Build backend image
+   docker build -t derulo-backend ./backend
+   
+   # Run backend container
+   docker run -d --name derulo-backend \
+     --network derulo-network \
+     -e DATABASE_URL=postgresql://postgres:student123@derulo-postgres:5432/exam \
+     -e FLASK_ENV=development \
+     -e FLASK_APP=app.py \
+     -e FLASK_DEBUG=1 \
+     -e SECRET_KEY=d2a8f3c6e4b1a9d8c7b6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4 \
+     -e SUPABASE_URL=https://vbopkjfdndwrwwysjfyy.supabase.co \
+     -e SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZib3BramZkbmR3cnd3eXNqZnl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk2MTU2MTAsImV4cCI6MjA2NTE5MTYxMH0.LVIaEPQCChFiPpgJHaUZOv1DKcTrbju-Sr476T1Z5Hs \
+     -e SUPABASE_JWT_SECRET=NHKbGT35MB9mAeqjV4OGRx8zemYCqUuQnvXpJyJWLb1PErQEdPesubtRryrVyR6dHUiA+5jZeNRrZqfyp2d6ZA== \
+     -p 5000:5000 \
+     derulo-backend
+   ```
+
+4. **Build and Start Frontend:**
+   ```bash
+   # Build frontend image
+   docker build -t derulo-frontend ./frontend
+   
+   # Run frontend container
+   docker run -d --name derulo-frontend \
+     --network derulo-network \
+     -p 80:80 \
+     derulo-frontend
+   ```
+
+5. **Stop and Remove All Containers:**
+   ```bash
+   docker stop derulo-frontend derulo-backend derulo-postgres
+   docker rm derulo-frontend derulo-backend derulo-postgres
+   ```
