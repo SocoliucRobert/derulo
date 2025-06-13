@@ -296,6 +296,12 @@ def home():
     return "FIESC Exam Scheduler Backend is running!"
 
 # Example: Get exams (fetches from DB or mock data)
+@app.route('/api/exams', methods=['POST'])
+@token_required
+def create_exam_proxy():
+    """Proxy endpoint to handle POST requests to /api/exams and redirect to /api/sec/exams"""
+    return create_exam()
+
 @app.route('/api/exams', methods=['GET'])
 @token_required
 def get_exams():
@@ -318,6 +324,10 @@ def get_exams():
 # Import the SG endpoints from the separate file
 import sg_endpoints
 from sg_endpoints import get_sg_exams, get_available_rooms, propose_exam_schedule, reschedule_exam
+
+# Import the SEC endpoints
+import sec_endpoints
+from sec_endpoints import create_exam, get_all_exams, export_exams_excel
 
 # Set DB_AVAILABLE in the sg_endpoints module
 sg_endpoints.DB_AVAILABLE = DB_AVAILABLE
@@ -558,8 +568,8 @@ def get_approved_exams():
                 d.specialization
             FROM exams e
             JOIN disciplines d ON e.discipline_id = d.id
-            JOIN users u ON d.teacher_id = u.id
-            WHERE e.status = 'APROVATA'
+            JOIN users u ON e.main_teacher_id = u.id
+            WHERE e.status = 'CONFIRMED'
             ORDER BY e.exam_date, d.year_of_study, d.specialization;
         """
         cursor.execute(query)

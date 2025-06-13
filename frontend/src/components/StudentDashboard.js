@@ -32,7 +32,7 @@ const StudentDashboard = ({ session }) => {
             
             <Box sx={{ mt: 2, mb: 2 }}>
                 <Typography variant="h5" align="center" gutterBottom>
-                    My Exams
+                   
                 </Typography>
             </Box>
             

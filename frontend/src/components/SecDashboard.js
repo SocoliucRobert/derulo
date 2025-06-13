@@ -2,16 +2,17 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import {
     AppBar, Toolbar, Typography, Button, Container, Box, Grid, Card,
-    CardContent, CardActions, Divider, CircularProgress, Snackbar, Alert,
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
+    CardContent, CardActions, Divider, Snackbar, Alert, Stack
 } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
+import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import ExamAssignment from './ExamAssignment';
 
 const SecDashboard = ({ session }) => {
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
     const [approvedExams, setApprovedExams] = useState([]);
     const [loadingExams, setLoadingExams] = useState(true);
+    const [downloading, setDownloading] = useState(false);
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -43,6 +44,7 @@ const SecDashboard = ({ session }) => {
 
     const handleDownloadExcel = async () => {
         try {
+            setDownloading(true);
             const response = await fetch('/api/sec/exams/export', {
                 headers: { 'Authorization': `Bearer ${session.access_token}` }
             });
@@ -51,12 +53,16 @@ const SecDashboard = ({ session }) => {
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', 'exam_schedule.xlsx');
+            const date = new Date().toISOString().split('T')[0];
+            link.setAttribute('download', `exam_schedule_${date}.xlsx`);
             document.body.appendChild(link);
             link.click();
             link.parentNode.removeChild(link);
+            setSnackbar({ open: true, message: 'Excel file downloaded successfully!', severity: 'success' });
         } catch (error) {
             setSnackbar({ open: true, message: error.message, severity: 'error' });
+        } finally {
+            setDownloading(false);
         }
     };
 
@@ -81,51 +87,30 @@ const SecDashboard = ({ session }) => {
                         <ExamAssignment session={session} />
                     </Grid>
 
-                    {/* Final Schedule Card */}
+                    {/* Export Exams Card */}
                     <Grid item xs={12}>
-                        <Card>
+                        <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
                             <CardContent>
-                                <Typography variant="h5" component="div">Exam Schedule</Typography>
-                                {loadingExams ? <CircularProgress /> : (
-                                    <TableContainer component={Paper} sx={{ mt: 2 }}>
-                                        <Table sx={{ minWidth: 650 }} aria-label="approved exams table">
-                                            <TableHead>
-                                                <TableRow>
-                                                    <TableCell>Discipline</TableCell>
-                                                    <TableCell>Teacher</TableCell>
-                                                    <TableCell>Exam Date</TableCell>
-                                                    <TableCell>Year</TableCell>
-                                                    <TableCell>Specialization</TableCell>
-                                                </TableRow>
-                                            </TableHead>
-                                            <TableBody>
-                                                {approvedExams.length > 0 ? approvedExams.map((exam) => (
-                                                    <TableRow key={exam.exam_id}>
-                                                        <TableCell>{exam.discipline_name}</TableCell>
-                                                        <TableCell>{exam.teacher_name}</TableCell>
-                                                        <TableCell>{new Date(exam.exam_date).toLocaleDateString()}</TableCell>
-                                                        <TableCell>{exam.year_of_study || 'N/A'}</TableCell>
-                                                        <TableCell>{exam.specialization || 'N/A'}</TableCell>
-                                                    </TableRow>
-                                                )) : (
-                                                    <TableRow>
-                                                        <TableCell colSpan={5} align="center">No approved exams yet.</TableCell>
-                                                    </TableRow>
-                                                )}
-                                            </TableBody>
-                                        </Table>
-                                    </TableContainer>
-                                )}
+                                <Stack direction="row" alignItems="center" spacing={2}>
+                                    <CloudDownloadIcon fontSize="large" color="primary" />
+                                    <Typography variant="h5" component="div">Export Confirmed Exams</Typography>
+                                </Stack>
+                                <Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 2 }}>
+                                    Download a complete list of all confirmed exams in Excel format. The file includes details such as discipline name, exam type, student group, exam date, time, duration, room, and teachers.
+                                </Typography>
                             </CardContent>
                             <Divider />
-                            <CardActions sx={{ p: 2 }}>
+                            <CardActions sx={{ p: 2, justifyContent: 'center' }}>
                                 <Button
-                                    variant="outlined"
+                                    variant="contained"
+                                    color="primary"
+                                    size="large"
                                     startIcon={<DownloadIcon />}
                                     onClick={handleDownloadExcel}
-                                    disabled={loadingExams || approvedExams.length === 0}
+                                    disabled={loadingExams || approvedExams.length === 0 || downloading}
+                                    sx={{ px: 4, py: 1 }}
                                 >
-                                    Download Excel
+                                    {downloading ? 'Downloading...' : `Download Excel (${approvedExams.length} exams)`}
                                 </Button>
                             </CardActions>
                         </Card>

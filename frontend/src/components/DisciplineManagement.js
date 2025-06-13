@@ -6,7 +6,6 @@ import {
     Typography,
     CircularProgress,
     Alert,
-    Paper,
     Table,
     TableBody,
     TableCell,
@@ -24,12 +23,24 @@ import {
     DialogContentText,
     DialogTitle,
     Chip,
-    OutlinedInput
+    OutlinedInput,
+    Card,
+    CardContent,
+    CardHeader,
+    Grid,
+    Divider,
+    Tooltip,
+    Snackbar,
+    Avatar,
+    Container
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import SchoolIcon from '@mui/icons-material/School';
+import PersonIcon from '@mui/icons-material/Person';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -190,137 +201,287 @@ const DisciplineManagement = () => {
         );
     };
 
-    if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
+    if (loading) return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+            <CircularProgress size={60} thickness={4} />
+        </Box>
+    );
 
     return (
-        <Box sx={{ p: 3, mt: 2 }}>
-            <Typography variant="h4" gutterBottom>Discipline Management</Typography>
-            {error && <Alert severity="error" onClose={() => setError('')} sx={{ mb: 2 }}>{error}</Alert>}
-            {success && <Alert severity="success" onClose={() => setSuccess('')} sx={{ mb: 2 }}>{success}</Alert>}
-
-            <Paper sx={{ p: 2, mb: 3 }}>
-                <Typography variant="h6">Add New Discipline</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
-                    <TextField
-                        label="Discipline Name"
-                        value={newDisciplineName}
-                        onChange={(e) => setNewDisciplineName(e.target.value)}
-                        variant="outlined"
-                        sx={{ flexGrow: 1 }}
+        <Container maxWidth="lg">
+            <Box sx={{ py: 4 }}>
+                <Card sx={{ mb: 4, borderRadius: 2, boxShadow: 3 }}>
+                    <CardHeader 
+                        title={
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <SchoolIcon fontSize="large" color="primary" />
+                                <Typography variant="h4">Discipline Management</Typography>
+                            </Box>
+                        }
+                        sx={{ bgcolor: 'primary.light', color: 'white', pb: 1 }}
                     />
-                    <FormControl sx={{ minWidth: 250, flexGrow: 1 }}>
-                        <InputLabel>Teachers</InputLabel>
-                        <Select
-                            multiple
-                            value={newDisciplineTeachers}
-                            onChange={handleNewTeacherChange}
-                            input={<OutlinedInput label="Teachers" />}
-                            renderValue={(selected) => (
-                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                    {selected.map((value) => (
-                                        <Chip key={value} label={allTeachers.find(t => t.id === value)?.full_name || ''} />
-                                    ))}
-                                </Box>
-                            )}
-                            MenuProps={MenuProps}
-                        >
-                            {allTeachers.map(teacher => (
-                                <MenuItem key={teacher.id} value={teacher.id}>
-                                    {teacher.full_name}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-                    <Button variant="contained" color="primary" onClick={handleAddDiscipline}>Add Discipline</Button>
-                </Box>
-            </Paper>
+                    <CardContent>
+                        <Typography variant="body1" color="text.secondary" paragraph>
+                            Manage academic disciplines and assign teachers. Add new disciplines, edit existing ones, or remove disciplines that are no longer needed.
+                        </Typography>
+                    </CardContent>
+                </Card>
 
-            <TableContainer component={Paper}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Discipline Name</TableCell>
-                            <TableCell>Teachers</TableCell>
-                            <TableCell align="right">Actions</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {disciplines.map((d) => (
-                            <TableRow key={d.id}>
-                                {
-                                    editState[d.id] ? (
-                                        <>
-                                            <TableCell sx={{ width: '30%' }}>
-                                                <TextField
-                                                    value={editState[d.id].name}
-                                                    onChange={(e) => handleInputChange(e, d.id)}
-                                                    name="name"
-                                                    fullWidth
-                                                />
+                <Snackbar 
+                    open={!!error} 
+                    autoHideDuration={6000} 
+                    onClose={() => setError('')}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                >
+                    <Alert severity="error" onClose={() => setError('')} sx={{ width: '100%' }}>{error}</Alert>
+                </Snackbar>
+
+                <Snackbar 
+                    open={!!success} 
+                    autoHideDuration={6000} 
+                    onClose={() => setSuccess('')}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                >
+                    <Alert severity="success" onClose={() => setSuccess('')} sx={{ width: '100%' }}>{success}</Alert>
+                </Snackbar>
+
+                <Card sx={{ mb: 4, borderRadius: 2, boxShadow: 2 }}>
+                    <CardHeader 
+                        title={
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <AddCircleIcon sx={{ mr: 1 }} />
+                                <Typography variant="h6">Add New Discipline</Typography>
+                            </Box>
+                        }
+                        sx={{ bgcolor: 'background.paper', pb: 0 }}
+                    />
+                    <CardContent>
+                        <Grid container spacing={3} alignItems="center">
+                            <Grid item xs={12} md={4}>
+                                <TextField
+                                    label="Discipline Name"
+                                    value={newDisciplineName}
+                                    onChange={(e) => setNewDisciplineName(e.target.value)}
+                                    variant="outlined"
+                                    fullWidth
+                                    placeholder="Enter discipline name"
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={6}>
+                                <FormControl fullWidth>
+                                    <InputLabel>Assign Teachers</InputLabel>
+                                    <Select
+                                        multiple
+                                        value={newDisciplineTeachers}
+                                        onChange={handleNewTeacherChange}
+                                        input={<OutlinedInput label="Assign Teachers" />}
+                                        renderValue={(selected) => (
+                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                                {selected.map((value) => (
+                                                    <Chip 
+                                                        key={value} 
+                                                        label={allTeachers.find(t => t.id === value)?.full_name || ''}
+                                                        avatar={<Avatar><PersonIcon /></Avatar>}
+                                                        color="primary"
+                                                        variant="outlined"
+                                                    />
+                                                ))}
+                                            </Box>
+                                        )}
+                                        MenuProps={MenuProps}
+                                    >
+                                        {allTeachers.map(teacher => (
+                                            <MenuItem key={teacher.id} value={teacher.id}>
+                                                {teacher.full_name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            <Grid item xs={12} md={2}>
+                                <Button 
+                                    variant="contained" 
+                                    color="primary" 
+                                    onClick={handleAddDiscipline}
+                                    fullWidth
+                                    size="large"
+                                    startIcon={<AddCircleIcon />}
+                                    sx={{ py: 1.5 }}
+                                >
+                                    Add Discipline
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </CardContent>
+                </Card>
+
+                <Card sx={{ borderRadius: 2, boxShadow: 2 }}>
+                    <CardHeader 
+                        title={
+                            <Typography variant="h6">Disciplines List</Typography>
+                        }
+                        sx={{ bgcolor: 'background.paper', pb: 0 }}
+                    />
+                    <Divider />
+                    <CardContent sx={{ p: 0 }}>
+                        <TableContainer>
+                            <Table sx={{ minWidth: 650 }}>
+                                <TableHead>
+                                    <TableRow sx={{ bgcolor: 'grey.100' }}>
+                                        <TableCell sx={{ fontWeight: 'bold' }}>Discipline Name</TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold' }}>Teachers</TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 'bold' }}>Actions</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {disciplines.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={3} align="center" sx={{ py: 3 }}>
+                                                <Typography variant="body1" color="text.secondary">
+                                                    No disciplines found. Add your first discipline above.
+                                                </Typography>
                                             </TableCell>
-                                            <TableCell sx={{ width: '50%' }}>
-                                                <FormControl fullWidth>
-                                                    <InputLabel>Teachers</InputLabel>
-                                                    <Select
-                                                        multiple
-                                                        value={editState[d.id].teacher_ids || []}
-                                                        onChange={(e) => handleTeacherChange(e, d.id)}
-                                                        input={<OutlinedInput label="Teachers" />}
-                                                        renderValue={(selected) => (
-                                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                                                {selected.map((value) => (
-                                                                    <Chip key={value} label={allTeachers.find(t => t.id === value)?.full_name || ''} />
-                                                                ))}
-                                                            </Box>
-                                                        )}
-                                                        MenuProps={MenuProps}
-                                                    >
-                                                        {allTeachers.map(teacher => (
-                                                            <MenuItem key={teacher.id} value={teacher.id}>
-                                                                {teacher.full_name}
-                                                            </MenuItem>
-                                                        ))}
-                                                    </Select>
-                                                </FormControl>
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                <IconButton onClick={() => handleUpdate(d.id)}><SaveIcon color="primary" /></IconButton>
-                                                <IconButton onClick={() => handleCancelClick(d.id)}><CancelIcon /></IconButton>
-                                            </TableCell>
-                                        </>
+                                        </TableRow>
                                     ) : (
-                                        <>
-                                            <TableCell>{d.name}</TableCell>
-                                            <TableCell>{d.teachers ? d.teachers.map(t => t.full_name).join(', ') : 'N/A'}</TableCell>
-                                            <TableCell align="right">
-                                                <IconButton onClick={() => handleEditClick(d)} color="primary"><EditIcon /></IconButton>
-                                                <IconButton onClick={() => setDeleteConfirm({ open: true, id: d.id })}><DeleteIcon color="error" /></IconButton>
-                                            </TableCell>
-                                        </>
-                                    )
-                                }
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                                        disciplines.map((d) => (
+                                            <TableRow key={d.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                                {
+                                                    editState[d.id] ? (
+                                                        <>
+                                                            <TableCell sx={{ width: '30%' }}>
+                                                                <TextField
+                                                                    value={editState[d.id].name}
+                                                                    onChange={(e) => handleInputChange(e, d.id)}
+                                                                    name="name"
+                                                                    fullWidth
+                                                                    variant="outlined"
+                                                                    size="small"
+                                                                />
+                                                            </TableCell>
+                                                            <TableCell sx={{ width: '50%' }}>
+                                                                <FormControl fullWidth size="small">
+                                                                    <InputLabel>Teachers</InputLabel>
+                                                                    <Select
+                                                                        multiple
+                                                                        value={editState[d.id].teacher_ids || []}
+                                                                        onChange={(e) => handleTeacherChange(e, d.id)}
+                                                                        input={<OutlinedInput label="Teachers" />}
+                                                                        renderValue={(selected) => (
+                                                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                                                                {selected.map((value) => (
+                                                                                    <Chip 
+                                                                                        key={value} 
+                                                                                        label={allTeachers.find(t => t.id === value)?.full_name || ''}
+                                                                                        size="small"
+                                                                                        color="primary"
+                                                                                        variant="outlined"
+                                                                                    />
+                                                                                ))}
+                                                                            </Box>
+                                                                        )}
+                                                                        MenuProps={MenuProps}
+                                                                    >
+                                                                        {allTeachers.map(teacher => (
+                                                                            <MenuItem key={teacher.id} value={teacher.id}>
+                                                                                {teacher.full_name}
+                                                                            </MenuItem>
+                                                                        ))}
+                                                                    </Select>
+                                                                </FormControl>
+                                                            </TableCell>
+                                                            <TableCell align="right">
+                                                                <Tooltip title="Save">
+                                                                    <IconButton onClick={() => handleUpdate(d.id)} color="primary">
+                                                                        <SaveIcon />
+                                                                    </IconButton>
+                                                                </Tooltip>
+                                                                <Tooltip title="Cancel">
+                                                                    <IconButton onClick={() => handleCancelClick(d.id)}>
+                                                                        <CancelIcon />
+                                                                    </IconButton>
+                                                                </Tooltip>
+                                                            </TableCell>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <TableCell>
+                                                                <Typography variant="body1">{d.name}</Typography>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {d.teachers && d.teachers.length > 0 ? (
+                                                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                                                        {d.teachers.map(teacher => (
+                                                                            <Chip 
+                                                                                key={teacher.id}
+                                                                                label={teacher.full_name}
+                                                                                size="small"
+                                                                                variant="outlined"
+                                                                                icon={<PersonIcon fontSize="small" />}
+                                                                            />
+                                                                        ))}
+                                                                    </Box>
+                                                                ) : (
+                                                                    <Typography variant="body2" color="text.secondary">No teachers assigned</Typography>
+                                                                )}
+                                                            </TableCell>
+                                                            <TableCell align="right">
+                                                                <Tooltip title="Edit">
+                                                                    <IconButton onClick={() => handleEditClick(d)} color="primary" size="small">
+                                                                        <EditIcon />
+                                                                    </IconButton>
+                                                                </Tooltip>
+                                                                <Tooltip title="Delete">
+                                                                    <IconButton onClick={() => setDeleteConfirm({ open: true, id: d.id })} color="error" size="small">
+                                                                        <DeleteIcon />
+                                                                    </IconButton>
+                                                                </Tooltip>
+                                                            </TableCell>
+                                                        </>
+                                                    )
+                                                }
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </CardContent>
+                </Card>
 
-            <Dialog
-                open={deleteConfirm.open}
-                onClose={() => setDeleteConfirm({ open: false, id: null })}
-            >
-                <DialogTitle>Confirm Deletion</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        Are you sure you want to delete this discipline? This action cannot be undone.
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setDeleteConfirm({ open: false, id: null })}>Cancel</Button>
-                    <Button onClick={() => handleDelete(deleteConfirm.id)} color="error">Delete</Button>
-                </DialogActions>
-            </Dialog>
-        </Box>
+                <Dialog
+                    open={deleteConfirm.open}
+                    onClose={() => setDeleteConfirm({ open: false, id: null })}
+                    PaperProps={{
+                        sx: { borderRadius: 2 }
+                    }}
+                >
+                    <DialogTitle sx={{ bgcolor: 'error.light', color: 'white' }}>
+                        Confirm Deletion
+                    </DialogTitle>
+                    <DialogContent sx={{ pt: 2, pb: 3, px: 3, mt: 1 }}>
+                        <DialogContentText>
+                            Are you sure you want to delete this discipline? This action cannot be undone and may affect related exams and schedules.
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions sx={{ px: 3, pb: 2 }}>
+                        <Button 
+                            onClick={() => setDeleteConfirm({ open: false, id: null })} 
+                            variant="outlined"
+                        >
+                            Cancel
+                        </Button>
+                        <Button 
+                            onClick={() => handleDelete(deleteConfirm.id)} 
+                            color="error" 
+                            variant="contained"
+                            startIcon={<DeleteIcon />}
+                        >
+                            Delete
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+            </Box>
+        </Container>
     );
 };
 

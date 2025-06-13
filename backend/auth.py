@@ -14,7 +14,7 @@ def token_required(f):
             auth_header = request.headers['authorization']
             if auth_header.startswith('Bearer '):
                 token = auth_header.split(' ')[1]
-                logging.debug(f"Extracted token: {token}")
+                #logging.debug(f"Extracted token: {token}")
             else:
                 logging.debug(f"Authorization header present but does not start with 'Bearer ': {auth_header}")
         else:

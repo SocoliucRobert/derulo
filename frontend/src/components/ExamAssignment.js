@@ -205,10 +205,10 @@ const ExamAssignment = ({ session }) => {
         <LocalizationProvider dateAdapter={AdapterDateFns}>
             <Card>
                 <CardContent>
-                    <Typography variant="h5" gutterBottom>
+                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, color: '#1976d2' }}>
                         Assign Exams to Groups
                     </Typography>
-                    <Typography color="text.secondary" paragraph>
+                    <Typography color="text.secondary" paragraph sx={{ mb: 3 }}>
                         Create exam assignments for student groups. Group leaders will be notified to propose dates.
                     </Typography>
                     
@@ -217,11 +217,35 @@ const ExamAssignment = ({ session }) => {
                             <CircularProgress />
                         </Box>
                     ) : (
-                        <Grid container spacing={2}>
+                        <Grid container spacing={3}>
                             <Grid item xs={12} md={6}>
-                                <FormControl fullWidth margin="normal">
+                                <FormControl fullWidth variant="outlined" sx={{ 
+                                    '& .MuiOutlinedInput-root': { 
+                                        borderRadius: '8px',
+                                        fontSize: '0.875rem'
+                                    }, 
+                                    '& .MuiInputLabel-root': { 
+                                        fontWeight: 500,
+                                        fontSize: '0.875rem'
+                                    },
+                                    '& .MuiMenuItem-root': {
+                                        fontSize: '0.875rem'
+                                    }
+                                }}>
                                     <InputLabel>Discipline</InputLabel>
                                     <Select
+                                        MenuProps={{
+                                            PaperProps: {
+                                                style: {
+                                                    maxHeight: 300,
+                                                    borderRadius: '8px',
+                                                    '& .MuiMenuItem-root': {
+                                                        fontSize: '0.875rem',
+                                                        padding: '6px 16px'
+                                                    }
+                                                },
+                                            },
+                                        }}
                                         name="discipline_id"
                                         value={formData.discipline_id}
                                         onChange={handleInputChange}
@@ -237,9 +261,33 @@ const ExamAssignment = ({ session }) => {
                             </Grid>
                             
                             <Grid item xs={12} md={6}>
-                                <FormControl fullWidth margin="normal">
+                                <FormControl fullWidth variant="outlined" sx={{ 
+                                    '& .MuiOutlinedInput-root': { 
+                                        borderRadius: '8px',
+                                        fontSize: '0.875rem'
+                                    }, 
+                                    '& .MuiInputLabel-root': { 
+                                        fontWeight: 500,
+                                        fontSize: '0.875rem'
+                                    },
+                                    '& .MuiMenuItem-root': {
+                                        fontSize: '0.875rem'
+                                    }
+                                }}>
                                     <InputLabel>Student Group</InputLabel>
                                     <Select
+                                        MenuProps={{
+                                            PaperProps: {
+                                                style: {
+                                                    maxHeight: 300,
+                                                    borderRadius: '8px',
+                                                    '& .MuiMenuItem-root': {
+                                                        fontSize: '0.875rem',
+                                                        padding: '6px 16px'
+                                                    }
+                                                },
+                                            },
+                                        }}
                                         name="student_group"
                                         value={formData.student_group}
                                         onChange={handleInputChange}
@@ -255,9 +303,33 @@ const ExamAssignment = ({ session }) => {
                             </Grid>
                             
                             <Grid item xs={12} md={4}>
-                                <FormControl fullWidth margin="normal">
+                                <FormControl fullWidth variant="outlined" sx={{ 
+                                    '& .MuiOutlinedInput-root': { 
+                                        borderRadius: '8px',
+                                        fontSize: '0.875rem'
+                                    }, 
+                                    '& .MuiInputLabel-root': { 
+                                        fontWeight: 500,
+                                        fontSize: '0.875rem'
+                                    },
+                                    '& .MuiMenuItem-root': {
+                                        fontSize: '0.875rem'
+                                    }
+                                }}>
                                     <InputLabel>Exam Type</InputLabel>
                                     <Select
+                                        MenuProps={{
+                                            PaperProps: {
+                                                style: {
+                                                    maxHeight: 300,
+                                                    borderRadius: '8px',
+                                                    '& .MuiMenuItem-root': {
+                                                        fontSize: '0.875rem',
+                                                        padding: '6px 16px'
+                                                    }
+                                                },
+                                            },
+                                        }}
                                         name="exam_type"
                                         value={formData.exam_type}
                                         onChange={handleInputChange}
@@ -270,9 +342,33 @@ const ExamAssignment = ({ session }) => {
                             </Grid>
                             
                             <Grid item xs={12} md={4}>
-                                <FormControl fullWidth margin="normal">
+                                <FormControl fullWidth variant="outlined" sx={{ 
+                                    '& .MuiOutlinedInput-root': { 
+                                        borderRadius: '8px',
+                                        fontSize: '0.875rem'
+                                    }, 
+                                    '& .MuiInputLabel-root': { 
+                                        fontWeight: 500,
+                                        fontSize: '0.875rem'
+                                    },
+                                    '& .MuiMenuItem-root': {
+                                        fontSize: '0.875rem'
+                                    }
+                                }}>
                                     <InputLabel>Main Teacher</InputLabel>
                                     <Select
+                                        MenuProps={{
+                                            PaperProps: {
+                                                style: {
+                                                    maxHeight: 300,
+                                                    borderRadius: '8px',
+                                                    '& .MuiMenuItem-root': {
+                                                        fontSize: '0.875rem',
+                                                        padding: '6px 16px'
+                                                    }
+                                                },
+                                            },
+                                        }}
                                         name="main_teacher_id"
                                         value={formData.main_teacher_id}
                                         onChange={handleInputChange}
@@ -288,9 +384,33 @@ const ExamAssignment = ({ session }) => {
                             </Grid>
                             
                             <Grid item xs={12} md={4}>
-                                <FormControl fullWidth margin="normal">
+                                <FormControl fullWidth variant="outlined" sx={{ 
+                                    '& .MuiOutlinedInput-root': { 
+                                        borderRadius: '8px',
+                                        fontSize: '0.875rem'
+                                    }, 
+                                    '& .MuiInputLabel-root': { 
+                                        fontWeight: 500,
+                                        fontSize: '0.875rem'
+                                    },
+                                    '& .MuiMenuItem-root': {
+                                        fontSize: '0.875rem'
+                                    }
+                                }}>
                                     <InputLabel>Second Teacher</InputLabel>
                                     <Select
+                                        MenuProps={{
+                                            PaperProps: {
+                                                style: {
+                                                    maxHeight: 300,
+                                                    borderRadius: '8px',
+                                                    '& .MuiMenuItem-root': {
+                                                        fontSize: '0.875rem',
+                                                        padding: '6px 16px'
+                                                    }
+                                                },
+                                            },
+                                        }}
                                         name="second_teacher_id"
                                         value={formData.second_teacher_id}
                                         onChange={handleInputChange}
@@ -306,9 +426,33 @@ const ExamAssignment = ({ session }) => {
                             </Grid>
                             
                             <Grid item xs={12} md={4}>
-                                <FormControl fullWidth margin="normal">
+                                <FormControl fullWidth variant="outlined" sx={{ 
+                                    '& .MuiOutlinedInput-root': { 
+                                        borderRadius: '8px',
+                                        fontSize: '0.875rem'
+                                    }, 
+                                    '& .MuiInputLabel-root': { 
+                                        fontWeight: 500,
+                                        fontSize: '0.875rem'
+                                    },
+                                    '& .MuiMenuItem-root': {
+                                        fontSize: '0.875rem'
+                                    }
+                                }}>
                                     <InputLabel>Room</InputLabel>
                                     <Select
+                                        MenuProps={{
+                                            PaperProps: {
+                                                style: {
+                                                    maxHeight: 300,
+                                                    borderRadius: '8px',
+                                                    '& .MuiMenuItem-root': {
+                                                        fontSize: '0.875rem',
+                                                        padding: '6px 16px'
+                                                    }
+                                                },
+                                            },
+                                        }}
                                         name="room_id"
                                         value={formData.room_id}
                                         onChange={handleInputChange}
@@ -332,6 +476,16 @@ const ExamAssignment = ({ session }) => {
                         color="primary" 
                         onClick={handleSubmit}
                         disabled={loading || submitting}
+                        sx={{
+                            borderRadius: '8px',
+                            padding: '10px 24px',
+                            fontWeight: 600,
+                            textTransform: 'none',
+                            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
+                            '&:hover': {
+                                boxShadow: '0 6px 12px rgba(0, 0, 0, 0.15)'
+                            }
+                        }}
                     >
                         {submitting ? <CircularProgress size={24} /> : 'Create Exam Assignment'}
                     </Button>
@@ -340,7 +494,7 @@ const ExamAssignment = ({ session }) => {
                 <Divider />
                 
                 <CardContent>
-                    <Typography variant="h6" gutterBottom>
+                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: '#1976d2', mt: 2 }}>
                         Current Exam Assignments
                     </Typography>
                     
@@ -349,9 +503,9 @@ const ExamAssignment = ({ session }) => {
                             <CircularProgress />
                         </Box>
                     ) : (
-                        <TableContainer component={Paper}>
-                            <Table>
-                                <TableHead>
+                        <TableContainer component={Paper} sx={{ borderRadius: '8px', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)', overflow: 'hidden' }}>
+                            <Table sx={{ minWidth: 650 }}>
+                                <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
                                     <TableRow>
                                         <TableCell>Discipline</TableCell>
                                         <TableCell>Group</TableCell>
@@ -390,7 +544,15 @@ const ExamAssignment = ({ session }) => {
             </Card>
             
             <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-                <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+                <Alert 
+                    onClose={handleCloseSnackbar} 
+                    severity={snackbar.severity} 
+                    sx={{ 
+                        width: '100%',
+                        borderRadius: '8px',
+                        '& .MuiAlert-message': { fontWeight: 500 }
+                    }}
+                >
                     {snackbar.message}
                 </Alert>
             </Snackbar>
