@@ -12,7 +12,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import { format } from 'date-fns';
 
 const AdminExams = ({ session }) => {
-    console.log('AdminExams component rendered with session:', session);
+    
     const [exams, setExams] = useState([]);
     const [loading, setLoading] = useState(true);
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });

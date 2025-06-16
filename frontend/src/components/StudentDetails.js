@@ -59,7 +59,7 @@ const StudentDetails = ({ session, userDetails, onUpdate }) => {
     return (
         <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
             <Typography variant="h5" component="h2" gutterBottom>
-                Your Academic Details
+                Detalii academice
             </Typography>
             <Box component="form" onSubmit={handleSubmit} noValidate>
                 <TextField
