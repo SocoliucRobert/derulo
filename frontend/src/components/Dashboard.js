@@ -90,7 +90,7 @@ const Dashboard = ({ session }) => {
             <AppBar position="static">
                 <Toolbar>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        FIESC Dashboard
+                        Meniu administrator
                     </Typography>
                     <Typography variant="body2" sx={{ mr: 2 }}>
                         {session.user.email}
@@ -102,9 +102,9 @@ const Dashboard = ({ session }) => {
                 {isAdmin && (
                     <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
                         <Tabs value={adminTab} onChange={handleAdminTabChange} centered>
-                            <Tab label="User Management" />
-                            <Tab label="Room Management" />
-                            <Tab label="Discipline Management" />
+                            <Tab label="Panou utilizatori" />
+                            <Tab label="Panou săli" />
+                            <Tab label="Panou discipline" />
                         </Tabs>
                         <Box sx={{ mt: 3 }}>
                             {adminTab === 0 && <UserManagement session={session} />}
@@ -155,7 +155,7 @@ const Dashboard = ({ session }) => {
                             </Grid>
                         ) : (
                             <Typography variant="body1" sx={{ textAlign: 'center' }}>
-                                No exams scheduled yet.
+                                Niciun examen programat.
                             </Typography>
                         )}
                     </Paper>

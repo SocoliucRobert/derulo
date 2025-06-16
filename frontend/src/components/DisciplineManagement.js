@@ -215,14 +215,14 @@ const DisciplineManagement = () => {
                         title={
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                 <SchoolIcon fontSize="large" color="primary" />
-                                <Typography variant="h4">Discipline Management</Typography>
+                                <Typography variant="h4">Panou discipline</Typography>
                             </Box>
                         }
                         sx={{ bgcolor: 'primary.light', color: 'white', pb: 1 }}
                     />
                     <CardContent>
                         <Typography variant="body1" color="text.secondary" paragraph>
-                            Manage academic disciplines and assign teachers. Add new disciplines, edit existing ones, or remove disciplines that are no longer needed.
+                        Gestionează disciplinele academice și atribuie profesori. Adaugă discipline noi, editează-le pe cele existente sau elimină disciplinele dorite.
                         </Typography>
                     </CardContent>
                 </Card>
@@ -250,7 +250,7 @@ const DisciplineManagement = () => {
                         title={
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                 <AddCircleIcon sx={{ mr: 1 }} />
-                                <Typography variant="h6">Add New Discipline</Typography>
+                                <Typography variant="h6">Adaugare disciplină</Typography>
                             </Box>
                         }
                         sx={{ bgcolor: 'background.paper', pb: 0 }}
@@ -259,7 +259,7 @@ const DisciplineManagement = () => {
                         <Grid container spacing={3} alignItems="center">
                             <Grid item xs={12} md={4}>
                                 <TextField
-                                    label="Discipline Name"
+                                    label="Nume disciplină"
                                     value={newDisciplineName}
                                     onChange={(e) => setNewDisciplineName(e.target.value)}
                                     variant="outlined"
@@ -269,7 +269,7 @@ const DisciplineManagement = () => {
                             </Grid>
                             <Grid item xs={12} md={6}>
                                 <FormControl fullWidth>
-                                    <InputLabel>Assign Teachers</InputLabel>
+                                    <InputLabel>Atribuie profesori</InputLabel>
                                     <Select
                                         multiple
                                         value={newDisciplineTeachers}
@@ -308,7 +308,7 @@ const DisciplineManagement = () => {
                                     startIcon={<AddCircleIcon />}
                                     sx={{ py: 1.5 }}
                                 >
-                                    Add Discipline
+                                    Adăugare
                                 </Button>
                             </Grid>
                         </Grid>
@@ -318,7 +318,7 @@ const DisciplineManagement = () => {
                 <Card sx={{ borderRadius: 2, boxShadow: 2 }}>
                     <CardHeader 
                         title={
-                            <Typography variant="h6">Disciplines List</Typography>
+                            <Typography variant="h6">Listă discipline</Typography>
                         }
                         sx={{ bgcolor: 'background.paper', pb: 0 }}
                     />
@@ -328,9 +328,9 @@ const DisciplineManagement = () => {
                             <Table sx={{ minWidth: 650 }}>
                                 <TableHead>
                                     <TableRow sx={{ bgcolor: 'grey.100' }}>
-                                        <TableCell sx={{ fontWeight: 'bold' }}>Discipline Name</TableCell>
-                                        <TableCell sx={{ fontWeight: 'bold' }}>Teachers</TableCell>
-                                        <TableCell align="right" sx={{ fontWeight: 'bold' }}>Actions</TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold' }}>Nume disciplină</TableCell>
+                                        <TableCell sx={{ fontWeight: 'bold' }}>Profesori</TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 'bold' }}>Acțiuni</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -360,12 +360,12 @@ const DisciplineManagement = () => {
                                                             </TableCell>
                                                             <TableCell sx={{ width: '50%' }}>
                                                                 <FormControl fullWidth size="small">
-                                                                    <InputLabel>Teachers</InputLabel>
+                                                                    <InputLabel>Profesori</InputLabel>
                                                                     <Select
                                                                         multiple
                                                                         value={editState[d.id].teacher_ids || []}
                                                                         onChange={(e) => handleTeacherChange(e, d.id)}
-                                                                        input={<OutlinedInput label="Teachers" />}
+                                                                        input={<OutlinedInput label="Profesori" />}
                                                                         renderValue={(selected) => (
                                                                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                                                                 {selected.map((value) => (

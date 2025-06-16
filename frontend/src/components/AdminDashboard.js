@@ -28,7 +28,7 @@ const AdminDashboard = ({ session }) => {
     };
     
     const handleTabChange = (event, newValue) => {
-        console.log(`Tab changed from ${activeTab} to ${newValue}`);
+        
         setActiveTab(newValue);
     };
 
@@ -139,7 +139,7 @@ const AdminDashboard = ({ session }) => {
                         </CardContent>
                         <Divider />
                         <Box sx={{ p: 2 }}>
-                            {console.log('Rendering AdminExams with session:', session)}
+                           
                             {session && session.access_token ? (
                                 <AdminExams session={session} />
                             ) : (

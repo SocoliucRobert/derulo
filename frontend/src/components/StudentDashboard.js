@@ -21,7 +21,7 @@ const StudentDashboard = ({ session }) => {
             <AppBar position="static">
                 <Toolbar>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        Student Dashboard
+                        Meniu student
                     </Typography>
                     <Typography variant="body2" sx={{ mr: 2 }}>
                         {session.user.email}

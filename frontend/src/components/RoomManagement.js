@@ -144,20 +144,20 @@ const RoomManagement = () => {
     return (
         <Box>
             <Typography variant="h5" component="h2" gutterBottom>
-                Room Management
+                    Panou săli
             </Typography>
 
             {error && <Alert severity="error" onClose={() => setError('')} sx={{ mb: 2 }}>{error}</Alert>}
             {success && <Alert severity="success" onClose={() => setSuccess('')} sx={{ mb: 2 }}>{success}</Alert>}
 
             <Paper component="form" onSubmit={handleAddRoom} sx={{ p: 2, mb: 3 }}>
-                <Typography variant="h6">Add New Room</Typography>
+                <Typography variant="h6">Adaugare Sali</Typography>
                 <Box sx={{ display: 'flex', gap: 2, mt: 2, flexWrap: 'wrap' }}>
-                    <TextField label="Room Name" name="name" value={newRoom.name} onChange={(e) => handleInputChange(e, false)} required variant="outlined" size="small" sx={{ flex: '1 1 150px' }} />
-                    <TextField label="Short Name" name="short_name" value={newRoom.short_name} onChange={(e) => handleInputChange(e, false)} variant="outlined" size="small" sx={{ flex: '1 1 100px' }} />
-                    <TextField label="Building" name="building_name" value={newRoom.building_name} onChange={(e) => handleInputChange(e, false)} variant="outlined" size="small" sx={{ flex: '1 1 100px' }} />
-                    <TextField label="Capacity" name="capacity" type="number" value={newRoom.capacity} onChange={(e) => handleInputChange(e, false)} required variant="outlined" size="small" sx={{ flex: '1 1 80px' }} />
-                    <Button type="submit" variant="contained">Add Room</Button>
+                    <TextField label="Nume sală" name="name" value={newRoom.name} onChange={(e) => handleInputChange(e, false)} required variant="outlined" size="small" sx={{ flex: '1 1 150px' }} />
+                    <TextField label="Prescurtare sală" name="short_name" value={newRoom.short_name} onChange={(e) => handleInputChange(e, false)} variant="outlined" size="small" sx={{ flex: '1 1 100px' }} />
+                    <TextField label="Clădire" name="building_name" value={newRoom.building_name} onChange={(e) => handleInputChange(e, false)} variant="outlined" size="small" sx={{ flex: '1 1 100px' }} />
+                    <TextField label="Capacitate" name="capacity" type="number" value={newRoom.capacity} onChange={(e) => handleInputChange(e, false)} required variant="outlined" size="small" sx={{ flex: '1 1 80px' }} />
+                    <Button type="submit" variant="contained">Adăugare</Button>
                 </Box>
             </Paper>
 
@@ -165,11 +165,11 @@ const RoomManagement = () => {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>Name</TableCell>
-                            <TableCell>Short Name</TableCell>
-                            <TableCell>Building</TableCell>
-                            <TableCell>Capacity</TableCell>
-                            <TableCell align="right">Actions</TableCell>
+                            <TableCell>Nume</TableCell>
+                            <TableCell>Prescurtare sală</TableCell>
+                            <TableCell>Clădire</TableCell>
+                            <TableCell>Capacitate</TableCell>
+                            <TableCell align="right">Acțiuni</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>

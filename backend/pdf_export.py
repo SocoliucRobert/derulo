@@ -126,7 +126,7 @@ def export_exams_pdf():
                     styles[style_name].fontName = 'STSong-Light'
         
         # Create title
-        title = Paragraph("Confirmed Exams Schedule", title_style)
+        title = Paragraph("Examene", title_style)
         
         # Create subtitle with current date
         date_style = ParagraphStyle(
@@ -136,10 +136,10 @@ def export_exams_pdf():
             spaceAfter=20
         )
         current_date = datetime.now().strftime("%Y-%m-%d")
-        subtitle = Paragraph(f"Generated on {current_date}", date_style)
+        subtitle = Paragraph(f"Generat la data {current_date}", date_style)
         
         # Define table headers
-        headers = ['Discipline', 'Type', 'Student Group', 'Date', 'Time', 'Room', 'Main Teacher', 'Second Teacher']
+        headers = ['Disciplina', 'Tip', 'Grupă', 'Data', 'Oră', 'Sala', 'Profesor 1', 'Profesor 2']
         
         # Prepare data for table
         data = [headers]
@@ -219,7 +219,7 @@ def export_exams_pdf():
         
         return send_file(
             buffer,
-            download_name=f"exam_schedule_{current_date}.pdf",
+            download_name=f"programare_{current_date}.pdf",
             as_attachment=True,
             mimetype='application/pdf'
         )

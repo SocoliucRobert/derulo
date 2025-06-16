@@ -60,7 +60,7 @@ const ExamAssignment = ({ session }) => {
                     'Authorization': `Bearer ${session.access_token}`
                 }
             });
-            if (!groupsResponse.ok) throw new Error('Failed to fetch student groups');
+            if (!groupsResponse.ok) throw new Error('Asignarea examenului nu a putut fi creata');
             const groupsData = await groupsResponse.json();
             setStudentGroups(groupsData);
             
@@ -80,7 +80,7 @@ const ExamAssignment = ({ session }) => {
                     'Authorization': `Bearer ${session.access_token}`
                 }
             });
-            if (!assignmentsResponse.ok) throw new Error('Failed to fetch exam assignments');
+            if (!assignmentsResponse.ok) throw new Error('Asignarea examenului nu a putut fi creata');
             const assignmentsData = await assignmentsResponse.json();
             setAssignments(assignmentsData);
             
@@ -111,7 +111,7 @@ const ExamAssignment = ({ session }) => {
         if (missingFields.length > 0) {
             setSnackbar({
                 open: true,
-                message: `Please fill in all required fields: ${missingFields.join(', ')}`,
+                message: `Te rog sa completezi toate campurile obligatorii: ${missingFields.join(', ')}`,
                 severity: 'warning'
             });
             return;
@@ -120,7 +120,7 @@ const ExamAssignment = ({ session }) => {
         if (formData.main_teacher_id === formData.second_teacher_id) {
             setSnackbar({
                 open: true,
-                message: 'Main teacher and second teacher cannot be the same',
+                message: 'Profesorul principal si profesorul de suplimentar nu pot fi acelasi',
                 severity: 'warning'
             });
             return;
@@ -141,7 +141,7 @@ const ExamAssignment = ({ session }) => {
             const data = await response.json();
             
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to create exam assignment');
+                throw new Error(data.error || 'Asignarea examenului nu a putut fi creata');
             }
             
             // Reset form and refresh data
@@ -156,7 +156,7 @@ const ExamAssignment = ({ session }) => {
             
             setSnackbar({
                 open: true,
-                message: 'Exam assignment created successfully',
+                message: 'Asignarea examenului a fost creata cu succes',
                 severity: 'success'
             });
             
@@ -206,10 +206,10 @@ const ExamAssignment = ({ session }) => {
             <Card>
                 <CardContent>
                     <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, color: '#1976d2' }}>
-                        Assign Exams to Groups
+                        Asignare examene
                     </Typography>
                     <Typography color="text.secondary" paragraph sx={{ mb: 3 }}>
-                        Create exam assignments for student groups. Group leaders will be notified to propose dates.
+                        Creeaza asignari examene pentru grupe studenti. Liderii grupei vor fi notificați pentru a propune date.
                     </Typography>
                     
                     {loading ? (
@@ -249,7 +249,7 @@ const ExamAssignment = ({ session }) => {
                                         name="discipline_id"
                                         value={formData.discipline_id}
                                         onChange={handleInputChange}
-                                        label="Discipline"
+                                        label="Disciplina"
                                     >
                                         {disciplines.map((discipline) => (
                                             <MenuItem key={discipline.id} value={discipline.id}>
@@ -274,7 +274,7 @@ const ExamAssignment = ({ session }) => {
                                         fontSize: '0.875rem'
                                     }
                                 }}>
-                                    <InputLabel>Student Group</InputLabel>
+                                    <InputLabel>Grupă</InputLabel>
                                     <Select
                                         MenuProps={{
                                             PaperProps: {
@@ -291,7 +291,7 @@ const ExamAssignment = ({ session }) => {
                                         name="student_group"
                                         value={formData.student_group}
                                         onChange={handleInputChange}
-                                        label="Student Group"
+                                        label="Grupă studenti"
                                     >
                                         {studentGroups.map((group) => (
                                             <MenuItem key={group.id || group.name} value={group.name || group}>
@@ -316,7 +316,7 @@ const ExamAssignment = ({ session }) => {
                                         fontSize: '0.875rem'
                                     }
                                 }}>
-                                    <InputLabel>Exam Type</InputLabel>
+                                    <InputLabel>Tip examen</InputLabel>
                                     <Select
                                         MenuProps={{
                                             PaperProps: {
@@ -333,10 +333,10 @@ const ExamAssignment = ({ session }) => {
                                         name="exam_type"
                                         value={formData.exam_type}
                                         onChange={handleInputChange}
-                                        label="Exam Type"
+                                        label="Tip examen"
                                     >
-                                        <MenuItem value="EXAM">Exam</MenuItem>
-                                        <MenuItem value="PROJECT">Project</MenuItem>
+                                        <MenuItem value="EXAM">Examen</MenuItem>
+                                        <MenuItem value="PROJECT">Proiect</MenuItem>
                                     </Select>
                                 </FormControl>
                             </Grid>
@@ -355,7 +355,7 @@ const ExamAssignment = ({ session }) => {
                                         fontSize: '0.875rem'
                                     }
                                 }}>
-                                    <InputLabel>Main Teacher</InputLabel>
+                                    <InputLabel>Profesor principal</InputLabel>
                                     <Select
                                         MenuProps={{
                                             PaperProps: {
@@ -372,7 +372,7 @@ const ExamAssignment = ({ session }) => {
                                         name="main_teacher_id"
                                         value={formData.main_teacher_id}
                                         onChange={handleInputChange}
-                                        label="Main Teacher"
+                                        label="Profesor principal"
                                     >
                                         {teachers.map((teacher) => (
                                             <MenuItem key={teacher.id} value={teacher.id}>
@@ -397,7 +397,7 @@ const ExamAssignment = ({ session }) => {
                                         fontSize: '0.875rem'
                                     }
                                 }}>
-                                    <InputLabel>Second Teacher</InputLabel>
+                                    <InputLabel>Profesor secundar</InputLabel>
                                     <Select
                                         MenuProps={{
                                             PaperProps: {
@@ -414,7 +414,7 @@ const ExamAssignment = ({ session }) => {
                                         name="second_teacher_id"
                                         value={formData.second_teacher_id}
                                         onChange={handleInputChange}
-                                        label="Second Teacher"
+                                        label="Profesor secundar"
                                     >
                                         {teachers.map((teacher) => (
                                             <MenuItem key={teacher.id} value={teacher.id}>
@@ -439,7 +439,7 @@ const ExamAssignment = ({ session }) => {
                                         fontSize: '0.875rem'
                                     }
                                 }}>
-                                    <InputLabel>Room</InputLabel>
+                                    <InputLabel>Sală</InputLabel>
                                     <Select
                                         MenuProps={{
                                             PaperProps: {
@@ -456,7 +456,7 @@ const ExamAssignment = ({ session }) => {
                                         name="room_id"
                                         value={formData.room_id}
                                         onChange={handleInputChange}
-                                        label="Room"
+                                        label="Sală"
                                     >
                                         {rooms.map((room) => (
                                             <MenuItem key={room.id} value={room.id}>
@@ -487,7 +487,7 @@ const ExamAssignment = ({ session }) => {
                             }
                         }}
                     >
-                        {submitting ? <CircularProgress size={24} /> : 'Create Exam Assignment'}
+                        {submitting ? <CircularProgress size={24} /> : 'Alege examen'}
                     </Button>
                 </CardActions>
                 
@@ -495,7 +495,7 @@ const ExamAssignment = ({ session }) => {
                 
                 <CardContent>
                     <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: '#1976d2', mt: 2 }}>
-                        Current Exam Assignments
+                        Asignări examene
                     </Typography>
                     
                     {loading ? (
@@ -508,11 +508,11 @@ const ExamAssignment = ({ session }) => {
                                 <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
                                     <TableRow>
                                         <TableCell>Discipline</TableCell>
-                                        <TableCell>Group</TableCell>
-                                        <TableCell>Type</TableCell>
-                                        <TableCell>Main Teacher</TableCell>
-                                        <TableCell>Second Teacher</TableCell>
-                                        <TableCell>Room</TableCell>
+                                        <TableCell>Grupă</TableCell>
+                                        <TableCell>Tip</TableCell>
+                                        <TableCell>Profesor principal</TableCell>
+                                        <TableCell>Profesor suplimentar</TableCell>
+                                        <TableCell>Sală</TableCell>
                                         <TableCell>Status</TableCell>
                                     </TableRow>
                                 </TableHead>
@@ -532,7 +532,7 @@ const ExamAssignment = ({ session }) => {
                                     ) : (
                                         <TableRow>
                                             <TableCell colSpan={6} align="center">
-                                                No exam assignments yet
+                                                Nu există examene confirmate.
                                             </TableCell>
                                         </TableRow>
                                     )}

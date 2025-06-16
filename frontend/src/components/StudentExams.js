@@ -65,7 +65,7 @@ const StudentExams = ({ session }) => {
             
             setSnackbar({
                 open: true,
-                message: 'Student information saved successfully!',
+                message: 'Detalii academice salvate cu succes!',
                 severity: 'success'
             });
             
@@ -163,7 +163,7 @@ const StudentExams = ({ session }) => {
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Typography variant="h4" sx={{ fontWeight: 700, color: '#1976d2', mb: 3, textAlign: 'center' }}>
-                My Exam Schedule
+                Examenele mele
             </Typography>
             
             {/* Student Information Card */}
@@ -193,7 +193,7 @@ const StudentExams = ({ session }) => {
                             <PersonIcon />
                         </Avatar>
                         <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                            Student Information
+                            Detalii academice
                         </Typography>
                     </Box>
                     <Button 
@@ -217,7 +217,7 @@ const StudentExams = ({ session }) => {
                         <Box component="form" sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
                             <TextField
                                 name="student_group"
-                                label="Student Group"
+                                label="Grupă"
                                 value={studentInfo.student_group}
                                 onChange={handleInputChange}
                                 fullWidth
@@ -227,7 +227,7 @@ const StudentExams = ({ session }) => {
                             />
                             <TextField
                                 name="year_of_study"
-                                label="Study Year"
+                                label="Anul de studiu"
                                 value={studentInfo.year_of_study}
                                 onChange={handleInputChange}
                                 fullWidth
@@ -251,18 +251,18 @@ const StudentExams = ({ session }) => {
                         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 4 }}>
                             <Box>
                                 <Typography variant="body2" color="text.secondary">
-                                    Student Group
+                                    Grupă
                                 </Typography>
                                 <Typography variant="body1" fontWeight={500}>
-                                    {studentInfo.student_group || "Not set"}
+                                    {studentInfo.student_group || "N/A"}
                                 </Typography>
                             </Box>
                             <Box>
                                 <Typography variant="body2" color="text.secondary">
-                                    Study Year
+                                    Anul de studiu
                                 </Typography>
                                 <Typography variant="body1" fontWeight={500}>
-                                    {studentInfo.year_of_study || "Not set"}
+                                    {studentInfo.year_of_study || "N/A"}
                                 </Typography>
                             </Box>
                         </Box>

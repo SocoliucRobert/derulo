@@ -153,7 +153,7 @@ const SgDashboard = ({ session }) => {
                 <Toolbar>
                     <SchoolIcon sx={{ mr: 2 }} />
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
-                        Group Leader Dashboard
+                        Meniu șef grupă
                     </Typography>
                     <Button color="inherit" variant="outlined" onClick={handleLogout} sx={{ borderRadius: 2 }}>
                         Logout
@@ -166,10 +166,10 @@ const SgDashboard = ({ session }) => {
                         <Paper elevation={3} sx={{ borderRadius: 2, overflow: 'hidden' }}>
                             <Box sx={{ p: 3, bgcolor: 'primary.light', color: 'primary.contrastText' }}>
                                 <Typography variant="h5" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                    <ScheduleIcon sx={{ mr: 1 }} /> My Exams
+                                    <ScheduleIcon sx={{ mr: 1 }} /> Examenele mele
                                 </Typography>
                                 <Typography variant="body1">
-                                    Propose or view exam schedules for your assigned exams.
+                                    Propune sau vizualizează data si ora examenului.
                                 </Typography>
                             </Box>
                             <List sx={{ bgcolor: 'background.paper', py: 0 }}>
@@ -218,13 +218,13 @@ const SgDashboard = ({ session }) => {
                                                                 <EventIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />
                                                                 <Typography variant="body2" color="text.secondary">
                                                                     {exam.exam_date && exam.exam_date !== 'null' ? 
-                                                                        new Date(exam.exam_date).toLocaleDateString() : 'Date not set'}
+                                                                        new Date(exam.exam_date).toLocaleDateString() : 'Data nu este setată'}
                                                                 </Typography>
                                                             </Box>
                                                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                                                 <AccessTimeIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />
                                                                 <Typography variant="body2" color="text.secondary">
-                                                                    {exam.start_hour ? `${exam.start_hour}:00` : 'Time not set'}
+                                                                    {exam.start_hour ? `${exam.start_hour}:00` : 'Ora nu este setată'}
                                                                 </Typography>
                                                             </Box>
                                                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -273,14 +273,14 @@ const SgDashboard = ({ session }) => {
                 <DialogTitle sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', pb: 2 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <EventIcon sx={{ mr: 1 }} />
-                        Propose Exam Schedule for {selectedExam?.discipline_name}
+                        Propune data si ora examenului {selectedExam?.discipline_name}
                     </Box>
                 </DialogTitle>
                 <DialogContent sx={{ pt: 3 }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                         <LocalizationProvider dateAdapter={AdapterDateFns}>
                             <DatePicker
-                                label="Exam Date"
+                                label="Data examenului"
                                 value={proposedDate}
                                 onChange={(newValue) => setProposedDate(newValue)}
                                 renderInput={(params) => <TextField {...params} fullWidth />}
@@ -289,12 +289,12 @@ const SgDashboard = ({ session }) => {
                                     const day = date.getDay();
                                     return day === 0 || day === 6; // Disable weekends
                                 }}
-                                helperText="Select Monday to Friday only"
+                                helperText="Selectează doar luni, marți, miercuri, joi si vineri"
                             />
                         </LocalizationProvider>
                         
                         <FormControl fullWidth>
-                            <InputLabel id="hour-select-label">Start Hour</InputLabel>
+                            <InputLabel id="hour-select-label">Ora examenului</InputLabel>
                             <Select
                                 labelId="hour-select-label"
                                 value={selectedHour}
@@ -306,15 +306,15 @@ const SgDashboard = ({ session }) => {
                                     <MenuItem key={hour} value={hour}>{hour}:00</MenuItem>
                                 ))}
                             </Select>
-                            <FormHelperText>Exams are 2 hours long</FormHelperText>
+                            <FormHelperText>Examenul durează 2 ore</FormHelperText>
                         </FormControl>
                         
                         <TextField
                             fullWidth
-                            label="Room"
+                            label="Sală"
                             value={selectedExam?.room_name || 'Not assigned'}
                             disabled={true}
-                            helperText="Room is assigned by Secretariat"
+                            helperText="Sala este asignată de Secretariat"
                             sx={{ mt: 2 }}
                         />
                     </Box>
@@ -330,7 +330,7 @@ const SgDashboard = ({ session }) => {
                         sx={{ borderRadius: 2 }}
                         startIcon={<EventIcon />}
                     >
-                        Submit Proposal
+                        Propune
                     </Button>
                 </DialogActions>
             </Dialog>

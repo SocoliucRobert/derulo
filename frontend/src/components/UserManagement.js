@@ -194,7 +194,7 @@ const UserManagement = ({ session }) => {
             <Box sx={{ my: 4 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
                 <Typography variant="h5" component="h2" gutterBottom>
-                    User Management
+                    Panou user
                 </Typography>
                 <Button
                     variant="contained"
@@ -202,7 +202,7 @@ const UserManagement = ({ session }) => {
                     startIcon={<LockResetIcon />}
                     onClick={handleOpenPasswordDialog}
                 >
-                    Change Admin Password
+                    Schimbă parola admin
                 </Button>
             </Stack>
             
@@ -213,12 +213,12 @@ const UserManagement = ({ session }) => {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Full Name</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>Nume complet</TableCell>
                             <TableCell sx={{ fontWeight: 'bold' }}>Email</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Role</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Group</TableCell>
-                            <TableCell sx={{ fontWeight: 'bold' }}>Year</TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 'bold' }}>Actions</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>Rol</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>Grupă</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>An</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 'bold' }}>Acțiuni</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -326,10 +326,10 @@ const UserManagement = ({ session }) => {
 
             {/* Password Change Dialog */}
             <Dialog open={passwordDialogOpen} onClose={handleClosePasswordDialog}>
-                <DialogTitle>Change Admin Password</DialogTitle>
+                <DialogTitle>Schimbă parola administrator</DialogTitle>
                 <DialogContent>
                     <DialogContentText sx={{ mb: 2 }}>
-                        Change password for admin@local.com account.
+                        Schimba parola administratorului admin@local.com.
                     </DialogContentText>
                     <TextField
                         autoFocus
@@ -368,7 +368,7 @@ const UserManagement = ({ session }) => {
                 <DialogActions>
                     <Button onClick={handleClosePasswordDialog}>Cancel</Button>
                     <Button onClick={handleChangePassword} variant="contained" color="primary">
-                        Change Password
+                        Schimbă parola
                     </Button>
                 </DialogActions>
             </Dialog>

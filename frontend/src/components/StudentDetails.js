@@ -23,7 +23,7 @@ const StudentDetails = ({ session, userDetails, onUpdate }) => {
 
         const year = parseInt(yearOfStudy, 10);
         if (yearOfStudy && (isNaN(year) || year < 1 || year > 6)) {
-            setError('Year of study must be a number between 1 and 6.');
+            setError('Anul de studiu trebuie să fie un număr între 1 și 6.');
             setLoading(false);
             return;
         }
@@ -47,7 +47,7 @@ const StudentDetails = ({ session, userDetails, onUpdate }) => {
                 throw new Error(data.message || 'Failed to update details.');
             }
 
-            setSuccess('Details updated successfully!');
+            setSuccess('Detalii actualizate cu succes!');
             onUpdate(data.user); // Callback to update parent state
         } catch (err) {
             setError(err.message);

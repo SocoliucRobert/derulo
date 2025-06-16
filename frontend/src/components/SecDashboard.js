@@ -29,7 +29,7 @@ const SecDashboard = ({ session }) => {
             const response = await fetch('/api/sec/approved-exams', {
                 headers: { 'Authorization': `Bearer ${session.access_token}` }
             });
-            if (!response.ok) throw new Error('Failed to fetch approved exams.');
+            if (!response.ok) throw new Error('Eroare la descarcare examene confirmate.');
             const data = await response.json();
             setApprovedExams(data);
         } catch (error) {
@@ -49,7 +49,7 @@ const SecDashboard = ({ session }) => {
             const response = await fetch('/api/sec/exams/export', {
                 headers: { 'Authorization': `Bearer ${session.access_token}` }
             });
-            if (!response.ok) throw new Error('Failed to download Excel.');
+            if (!response.ok) throw new Error('Eroare la descarcare Excel.');
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -59,7 +59,7 @@ const SecDashboard = ({ session }) => {
             document.body.appendChild(link);
             link.click();
             link.parentNode.removeChild(link);
-            setSnackbar({ open: true, message: 'Excel file downloaded successfully!', severity: 'success' });
+            setSnackbar({ open: true, message: 'Excel descărcat cu succes!', severity: 'success' });
         } catch (error) {
             setSnackbar({ open: true, message: error.message, severity: 'error' });
         } finally {
@@ -73,7 +73,7 @@ const SecDashboard = ({ session }) => {
             const response = await fetch('/api/sec/exams/export-pdf', {
                 headers: { 'Authorization': `Bearer ${session.access_token}` }
             });
-            if (!response.ok) throw new Error('Failed to download PDF.');
+            if (!response.ok) throw new Error('Eroare la descarcare PDF.');
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -83,7 +83,7 @@ const SecDashboard = ({ session }) => {
             document.body.appendChild(link);
             link.click();
             link.parentNode.removeChild(link);
-            setSnackbar({ open: true, message: 'PDF file downloaded successfully!', severity: 'success' });
+            setSnackbar({ open: true, message: 'PDF descarcat cu succes!', severity: 'success' });
         } catch (error) {
             setSnackbar({ open: true, message: error.message, severity: 'error' });
         } finally {
@@ -96,7 +96,7 @@ const SecDashboard = ({ session }) => {
             <AppBar position="static">
                 <Toolbar>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        Secretariat Dashboard
+                        Meniu secretariat
                     </Typography>
                     <Typography variant="body2" sx={{ mr: 2 }}>
                         {session.user.email}
@@ -118,10 +118,10 @@ const SecDashboard = ({ session }) => {
                             <CardContent>
                                 <Stack direction="row" alignItems="center" spacing={2}>
                                     <CloudDownloadIcon fontSize="large" color="primary" />
-                                    <Typography variant="h5" component="div">Export Confirmed Exams</Typography>
+                                    <Typography variant="h5" component="div">Exportează examenele confirmate</Typography>
                                 </Stack>
                                 <Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 2 }}>
-                                    Download a complete list of all confirmed exams in Excel format. The file includes details such as discipline name, exam type, student group, exam date, time, duration, room, and teachers.
+                                    Descarcă lista completă cu toate examenele confirmate în formatul Excel sau. Fișierul include detalii precum numele disciplinei, tipul examenului, grupa, data examenului, ora, sala și profesorii.
                                 </Typography>
                             </CardContent>
                             <Divider />
@@ -134,7 +134,7 @@ const SecDashboard = ({ session }) => {
                                         disabled={loadingExams || approvedExams.length === 0 || downloading.excel || downloading.pdf}
                                         sx={{ px: 3, py: 1 }}
                                     >
-                                        {downloading.excel ? 'Downloading...' : `Excel (${approvedExams.length} exams)`}
+                                        {downloading.excel ? 'Descarcare...' : `Excel (${approvedExams.length} examene)`}
                                     </Button>
                                     <Button
                                         color="secondary"
@@ -143,7 +143,7 @@ const SecDashboard = ({ session }) => {
                                         disabled={loadingExams || approvedExams.length === 0 || downloading.excel || downloading.pdf}
                                         sx={{ px: 3, py: 1 }}
                                     >
-                                        {downloading.pdf ? 'Downloading...' : `PDF (${approvedExams.length} exams)`}
+                                        {downloading.pdf ? 'Descarcare...' : `PDF (${approvedExams.length} examene)`}
                                     </Button>
                                 </ButtonGroup>
                             </CardActions>

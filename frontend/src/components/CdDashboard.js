@@ -21,7 +21,7 @@ const CdDashboard = ({ session }) => {
             <AppBar position="static">
                 <Toolbar>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        Course Director Dashboard
+                        Meniu profesor
                     </Typography>
                     <Button color="inherit" onClick={handleLogout}>Logout</Button>
                 </Toolbar>

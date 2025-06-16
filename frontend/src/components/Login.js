@@ -163,10 +163,10 @@ const Login = () => {
                 <LeftPanel>
                     <Box sx={{ position: 'relative', zIndex: 1, maxWidth: '500px', textAlign: 'center' }}>
                         <Typography variant="h2" component="h1" fontWeight="700" gutterBottom>
-                            FIESC Exam Scheduler
+                            FIESC programare examene
                         </Typography>
                         <Typography variant="h6" sx={{ mb: 4, opacity: 0.9 }}>
-                            Streamline your exam scheduling process with our intuitive platform
+                            Programarea examenelor pentru profesori, studenti, șefi de grupă și personalul secretariatului
                         </Typography>
                         <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mb: 4 }}>
                             <Button 
@@ -179,7 +179,7 @@ const Login = () => {
                                     '&:hover': { borderColor: 'white', bgcolor: activePanel === 'google' ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)' }
                                 }}
                             >
-                                Student & Staff
+                                Studenți & Profesori
                             </Button>
                             <Button 
                                 variant={activePanel === 'admin' ? "contained" : "outlined"} 
@@ -203,10 +203,10 @@ const Login = () => {
                         {activePanel === 'google' ? (
                             <Box sx={{ textAlign: 'center' }}>
                                 <Typography variant="h4" component="h2" fontWeight="600" gutterBottom>
-                                    Welcome Back
+                                    Bine ai venit!
                                 </Typography>
                                 <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-                                    Sign in with your institutional Google account
+                                    Autentifică-te cu contul Google instituțional
                                 </Typography>
                                 
                                 <GoogleButton
@@ -217,11 +217,11 @@ const Login = () => {
                                     onClick={handleGoogleLogin}
                                     disabled={loading}
                                 >
-                                    {loading ? <CircularProgress size={20} /> : 'Sign in with Google'}
+                                    {loading ? <CircularProgress size={20} /> : 'Autentifică-te cu Google'}
                                 </GoogleButton>
                                 
                                 <Typography variant="body2" color="text.secondary" sx={{ mt: 4 }}>
-                                    For students, group leaders, teachers, and secretariat staff
+                                    Pentru studenți, șefi de grupă, profesori și personalul secretariatului
                                 </Typography>
                             </Box>
                         ) : (
@@ -230,7 +230,7 @@ const Login = () => {
                                     Administrator Login
                                 </Typography>
                                 <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-                                    Access the system administration panel
+                                    Autentifică-te pentru a accesa panoul de administrare
                                 </Typography>
                                 
                                 <Box component="form" onSubmit={handleAdminLogin}>
@@ -294,7 +294,7 @@ const Login = () => {
                         
                         <Box sx={{ textAlign: 'center', mt: 6 }}>
                             <Typography variant="body2" color="text.secondary">
-                                © {new Date().getFullYear()} FIESC Exam Scheduling System
+                                © {new Date().getFullYear()} FIESC Sistem de programare a examenilor
                             </Typography>
                         </Box>
                     </Box>

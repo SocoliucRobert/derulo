@@ -297,9 +297,9 @@ const TeacherExams = ({ session }) => {
                 <Grid item xs={12}>
                     <Card sx={{ boxShadow: '0 4px 12px rgba(0,0,0,0.1)', borderRadius: '12px', overflow: 'hidden' }}>
                         <CardContent sx={{ backgroundColor: '#f5f9ff' }}>
-                            <Typography variant="h5" sx={{ fontWeight: 600, color: '#1976d2' }}>My Exams</Typography>
+                            <Typography variant="h5" sx={{ fontWeight: 600, color: '#1976d2' }}>Examenele mele</Typography>
                             <Typography color="text.secondary" sx={{ mb: 1 }}>
-                                Review and manage your assigned exams
+                                Verifică programările și gestionează examenele tale
                             </Typography>
                         </CardContent>
                         <Box sx={{ borderBottom: 1, borderColor: 'divider', backgroundColor: '#f5f9ff' }}>
@@ -316,9 +316,9 @@ const TeacherExams = ({ session }) => {
                                     }
                                 }}
                             >
-                                <Tab label="All Exams" />
-                                <Tab label="Rejected" />
-                                <Tab label="Confirmed" />
+                                <Tab label="Toate examenele" />
+                                <Tab label="Refuzate" />
+                                <Tab label="Confirmate" />
                             </Tabs>
                         </Box>
                         <Divider />
@@ -341,26 +341,26 @@ const TeacherExams = ({ session }) => {
                                             <Grid item xs={12} sm={3}>
                                                 <ListItemText 
                                                     primary={<Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{exam.discipline_name}</Typography>} 
-                                                    secondary={<Typography variant="body2">{`Type: ${exam.exam_type}`}</Typography>}
+                                                    secondary={<Typography variant="body2">{`Tip examen: ${exam.exam_type}`}</Typography>}
                                                 />
                                             </Grid>
                                             <Grid item xs={12} sm={2}>
                                                 <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                                                    <strong>Group:</strong> <span style={{ marginLeft: '4px' }}>{exam.student_group}</span>
+                                                    <strong>Grupă:</strong> <span style={{ marginLeft: '4px' }}>{exam.student_group}</span>
                                                 </Typography>
                                                 <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
-                                                    <strong>Role:</strong> <span style={{ marginLeft: '4px' }}>{exam.teacher_role}</span>
+                                                    <strong>Rol:</strong> <span style={{ marginLeft: '4px' }}>{exam.teacher_role}</span>
                                                 </Typography>
                                             </Grid>
                                             <Grid item xs={12} sm={3}>
                                                 <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                                                    <strong>Date:</strong> <span style={{ marginLeft: '4px' }}>{formatDate(exam.exam_date)}</span>
+                                                    <strong>Data:</strong> <span style={{ marginLeft: '4px' }}>{formatDate(exam.exam_date)}</span>
                                                 </Typography>
                                                 <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                                                    <strong>Time:</strong> <span style={{ marginLeft: '4px' }}>{exam.start_hour ? `${exam.start_hour}:00 (${exam.duration || 120} min)` : "Not set"}</span>
+                                                    <strong>Oră:</strong> <span style={{ marginLeft: '4px' }}>{exam.start_hour ? `${exam.start_hour}:00 (${exam.duration || 120} min)` : "Not set"}</span>
                                                 </Typography>
                                                 <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
-                                                    <strong>Room:</strong> <span style={{ marginLeft: '4px' }}>{exam.room_name || "Not assigned"}</span>
+                                                    <strong>Sală:</strong> <span style={{ marginLeft: '4px' }}>{exam.room_name || "Not assigned"}</span>
                                                 </Typography>
                                             </Grid>
                                             <Grid item xs={6} sm={2}>
@@ -409,17 +409,17 @@ const TeacherExams = ({ session }) => {
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        {reviewDialog.action === 'ACCEPT' && 'Are you sure you want to accept this exam proposal?'}
-                        {reviewDialog.action === 'REJECT' && 'Are you sure you want to reject this exam proposal?'}
-                        {reviewDialog.action === 'ALTERNATE' && 'Please specify an alternate date and time for this exam:'}
-                        {reviewDialog.action === 'CANCEL' && 'Are you sure you want to cancel this exam?'}
+                        {reviewDialog.action === 'ACCEPT' && 'Ești sigur că doriți să acceptați această propunere de examen?'}
+                        {reviewDialog.action === 'REJECT' && 'Ești sigur că doriți să refuzați această propunere de examen?'}
+                        {reviewDialog.action === 'ALTERNATE' && 'Specificați o dată și o oră alternativă pentru acest examen:'}
+                        {reviewDialog.action === 'CANCEL' && 'Ești sigur că doriți să anulați acest examen?'}
                     </DialogContentText>
                     
                     {reviewDialog.action === 'ALTERNATE' && (
                         <Box sx={{ mt: 2 }}>
                             <LocalizationProvider dateAdapter={AdapterDateFns}>
                                 <DatePicker
-                                    label="Alternate Date"
+                                    label="Data alternativă"
                                     value={reviewDialog.alternateDate}
                                     onChange={(newDate) => setReviewDialog({
                                         ...reviewDialog,
@@ -430,10 +430,10 @@ const TeacherExams = ({ session }) => {
                             </LocalizationProvider>
                             
                             <FormControl fullWidth margin="normal">
-                                <InputLabel>Alternate Hour</InputLabel>
+                                <InputLabel>Oră alternativă</InputLabel>
                                 <Select
                                     value={reviewDialog.alternateHour}
-                                    label="Alternate Hour"
+                                    label="Oră alternativă"
                                     onChange={(e) => setReviewDialog({
                                         ...reviewDialog,
                                         alternateHour: e.target.value
