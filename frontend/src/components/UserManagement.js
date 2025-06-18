@@ -98,7 +98,7 @@ const UserManagement = ({ session }) => {
         })
         .then(res => {
             if (res.ok) {
-                setSuccess('User updated successfully!');
+                setSuccess('Actualizare cu succes!');
                 setEditingUserId(null);
                 fetchUsers(); // Refresh the user list
             } else {
@@ -263,7 +263,7 @@ const UserManagement = ({ session }) => {
                                                 <TableCell>
                                                     <TextField
                                                         name="student_group"
-                                                        label="Group"
+                                                        label="Grupa"
                                                         value={editedUser.student_group || ''}
                                                         onChange={handleInputChange}
                                                         variant="outlined"
@@ -273,7 +273,7 @@ const UserManagement = ({ session }) => {
                                                 <TableCell>
                                                     <TextField
                                                         name="year_of_study"
-                                                        label="Year"
+                                                        label="An"
                                                         type="number"
                                                         value={editedUser.year_of_study || ''}
                                                         onChange={handleInputChange}

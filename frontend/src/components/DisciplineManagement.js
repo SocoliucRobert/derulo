@@ -156,7 +156,7 @@ const DisciplineManagement = () => {
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.message || 'Failed to update discipline');
-            setSuccess('Discipline updated successfully!');
+            setSuccess('Actualizare cu succes!');
             setEditState(prev => { const newState = { ...prev }; delete newState[id]; return newState; });
             fetchDisciplines();
         } catch (err) {

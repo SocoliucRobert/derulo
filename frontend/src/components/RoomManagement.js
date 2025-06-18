@@ -68,7 +68,7 @@ const RoomManagement = () => {
         })
         .then(res => {
             if (res.ok) {
-                setSuccess('Room updated successfully!');
+                setSuccess('Actualizare cu succes!');
                 setEditingRoomId(null);
                 fetchRooms();
             } else {
